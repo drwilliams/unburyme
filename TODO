@@ -1,7 +1,7 @@
 Code
     *Could use some more refactoring
     *Set up compiling for CSS
-    *Get Adv Closure Compiling for js (needs Chart.js externs)
+    *Get Adv Closure Compiling for js (needs uPlot externs)
 
 Functionality
 	*Tutorial

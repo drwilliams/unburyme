@@ -674,8 +674,18 @@ tr.alternateRows1	{
 #graph	{
 	position: relative;
 	width: 600px;
-	height: 300px;
+	min-height: 340px;
 	margin: 0 auto;
+}
+
+#graph .u-legend	{
+	margin-bottom: 6px;
+	font-size: 12px;
+	color: #545454;
+}
+
+#graph .u-legend .u-series th	{
+	font-weight: normal;
 }
 
 #graphTitle	{

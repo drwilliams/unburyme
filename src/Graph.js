@@ -1,6 +1,6 @@
 /**
  * Unburyme.Graph
- * Draws the payoff graph with Chart.js
+ * Draws the payoff graph with uPlot
  * @param {Unburyme.LoanApp} loanApp
  * @constructor
  */
@@ -10,6 +10,7 @@ Unburyme.Graph = function(loanApp)  {
     this.colorSet = this.loanApp.config.colorSet;
     this.lastFieldGraphed = 'princRemaining';
     this.chart = null;
+    this.chartKey = '';
     this.yearTicks = [];
 
 };
@@ -22,37 +23,11 @@ Unburyme.Graph.TITLES = {
     'monthlyPayment': 'Monthly Payment'
 };
 
-
-/**
- * Fills the plot area with the app's white-to-blue gradient and outlines it
- */
-Unburyme.Graph.backgroundPlugin = {
-    id: 'unburymeBackground',
-    beforeDraw: function(chart) {
-        var area = chart.chartArea,
-            ctx = chart.ctx;
-        if(!area)
-            return;
-        var gradient = ctx.createLinearGradient(0, area.top, 0, area.bottom);
-        gradient.addColorStop(0, '#ffffff');
-        gradient.addColorStop(1, '#b0edf7');
-        ctx.save();
-        ctx.fillStyle = gradient;
-        ctx.fillRect(area.left, area.top, area.right - area.left, area.bottom - area.top);
-        ctx.restore();
-    },
-    afterDraw: function(chart)  {
-        var area = chart.chartArea,
-            ctx = chart.ctx;
-        if(!area)
-            return;
-        ctx.save();
-        ctx.strokeStyle = '#545454';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(area.left, area.top, area.right - area.left, area.bottom - area.top);
-        ctx.restore();
-    }
-};
+Unburyme.Graph.WIDTH = 600;
+Unburyme.Graph.HEIGHT = 300;
+Unburyme.Graph.AXIS_FONT = '11px "Droid Sans", arial, sans-serif';
+Unburyme.Graph.AXIS_COLOR = '#545454';
+Unburyme.Graph.GRID = {stroke: 'rgba(0, 0, 0, 0.08)', width: 1};
 
 
 /**
@@ -70,116 +45,137 @@ Unburyme.Graph.prototype.draw = function(field) {
     Unburyme.Dom.fadeIn(Unburyme.Dom.byId('graphViewOptions'), fadeSpeed);
     this.drawTitle(field);
 
-    var datasets = this.makeDataSets(field),
-        months = 0;
-    for(var i=0;i<datasets.length;i++)
-        months = Math.max(months, datasets[i].data.length);
-
-    if(typeof Chart == 'undefined')
+    if(typeof uPlot == 'undefined')
         return;
-    if(!this.chart)
-        this.chart = new Chart(this.getCanvas(), this.makeConfig());
 
-    this.yearTicks = this.makeYearTicks(months);
-    this.chart.options.scales.x.max = Math.max(months - 1, 1);
-    this.chart.data.datasets = datasets;
-    this.chart.update('none');
-
-};
-
-
-/**
- * @return {HTMLCanvasElement} The canvas inside #graph, created on first use
- */
-Unburyme.Graph.prototype.getCanvas = function() {
-
-    var container = Unburyme.Dom.byId('graph'),
-        canvas = container.querySelector('canvas');
-    if(!canvas) {
-        canvas = document.createElement('canvas');
-        canvas.setAttribute('role', 'img');
-        canvas.setAttribute('aria-label', 'Graph of each loan over time');
-        container.appendChild(canvas);
+    var loans = this.loanApp.initLoanArray,
+        names = [],
+        columns = [],
+        months = 0,
+        i, m;
+    for(i=0;i<loans.length;i++) {
+        names.push(loans[i].getName());
+        columns.push(loans[i].results.getGraphData(field) || []);
+        months = Math.max(months, columns[i].length);
     }
-    return canvas;
+
+    // uPlot wants one shared x array, with every series padded to its length
+    var data = [[]];
+    for(m=0;m<months;m++)
+        data[0].push(m);
+    for(i=0;i<columns.length;i++)  {
+        var series = columns[i].slice();
+        while(series.length < months)
+            series.push(null);
+        data.push(series);
+    }
+    this.yearTicks = this.makeYearTicks(months);
+
+    // Rebuild only when the set of series changes; otherwise just swap the data
+    var key = JSON.stringify(names);
+    if(this.chart && key == this.chartKey)  {
+        this.chart.setData(data);
+        return;
+    }
+    if(this.chart)
+        this.chart.destroy();
+    this.chartKey = key;
+    this.chart = new uPlot(this.makeOptions(names), data, Unburyme.Dom.byId('graph'));
 
 };
 
 
 /**
- * @return {Object} Chart.js configuration
+ * @param {string[]} names Loan names, in series order
+ * @return {Object} uPlot options
  */
-Unburyme.Graph.prototype.makeConfig = function()    {
+Unburyme.Graph.prototype.makeOptions = function(names)  {
 
-    var self = this;
-    var startDate = function()  {
-        return new Unburyme.Date();
-    };
+    var self = this,
+        G = Unburyme.Graph,
+        series = [{
+            label: 'Month',
+            value: function(u, v)   {
+                return v == null ? '' : self.monthLabel(v);
+            }
+        }];
+
+    for(var i=0;i<names.length;i++) {
+        series.push({
+            label: names[i],
+            stroke: this.colorSet[i % this.colorSet.length],
+            width: 2,
+            points: {show: false},
+            value: function(u, v)   {
+                return v == null ? '' : '$' + v.toFixed(2);
+            }
+        });
+    }
 
     return {
-        type: 'line',
-        data: {datasets: []},
-        plugins: [Unburyme.Graph.backgroundPlugin],
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: false,
-            parsing: false,
-            interaction: {mode: 'index', intersect: false},
-            elements: {
-                point: {radius: 0, hitRadius: 6, hoverRadius: 4},
-                line: {borderWidth: 2, tension: 0}
-            },
-            scales: {
-                x: {
-                    type: 'linear',
-                    min: 0,
-                    grid: {color: 'rgba(0, 0, 0, 0.08)'},
-                    afterBuildTicks: function(axis) {
-                        axis.ticks = self.yearTicks.map(function(v) { return {value: v}; });
-                    },
-                    ticks: {
-                        color: '#545454',
-                        callback: function(value)   {
-                            var date = startDate();
-                            for(var m=0;m<value;m++)
-                                date.increment();
-                            return String(date.getYear());
-                        }
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    grid: {color: 'rgba(0, 0, 0, 0.08)'},
-                    ticks: {
-                        color: '#545454',
-                        maxTicksLimit: 8,
-                        callback: Unburyme.Graph.dollarFormatter
-                    }
+        width: G.WIDTH,
+        height: G.HEIGHT,
+        series: series,
+        cursor: {y: false, points: {size: 7}, drag: {x: false, y: false}},
+        scales: {
+            x: {
+                time: false,
+                range: function(u, min, max)    {
+                    return [0, Math.max(max, 1)];
                 }
             },
-            plugins: {
-                legend: {
-                    position: 'top',
-                    align: 'end',
-                    labels: {boxWidth: 14, boxHeight: 10, color: '#545454'}
-                },
-                tooltip: {
-                    callbacks: {
-                        title: function(items)  {
-                            if(!items.length)
-                                return '';
-                            var date = startDate();
-                            for(var m=0;m<items[0].parsed.x;m++)
-                                date.increment();
-                            return date.print();
-                        },
-                        label: function(item)   {
-                            return ' ' + item.dataset.label + ': $' + item.parsed.y.toFixed(2);
-                        }
-                    }
+            y: {
+                range: function(u, min, max)    {
+                    return uPlot.rangeNum(0, max > 0 ? max : 1, 0.1, true);
                 }
             }
+        },
+        axes: [
+            {
+                font: G.AXIS_FONT,
+                stroke: G.AXIS_COLOR,
+                grid: G.GRID,
+                ticks: G.GRID,
+                splits: function()  {
+                    return self.yearTicks;
+                },
+                values: function(u, splits) {
+                    return splits.map(function(m) { return String(self.dateAt(m).getYear()); });
+                }
+            },
+            {
+                font: G.AXIS_FONT,
+                stroke: G.AXIS_COLOR,
+                grid: G.GRID,
+                ticks: G.GRID,
+                size: 60,
+                values: function(u, splits) {
+                    return splits.map(Unburyme.Graph.dollarFormatter);
+                }
+            }
+        ],
+        hooks: {
+            // White-to-blue gradient behind the plot, and a dark outline around it
+            drawClear: [function(u)    {
+                var b = u.bbox,
+                    ctx = u.ctx,
+                    gradient = ctx.createLinearGradient(0, b.top, 0, b.top + b.height);
+                gradient.addColorStop(0, '#ffffff');
+                gradient.addColorStop(1, '#b0edf7');
+                ctx.save();
+                ctx.fillStyle = gradient;
+                ctx.fillRect(b.left, b.top, b.width, b.height);
+                ctx.restore();
+            }],
+            draw: [function(u)    {
+                var b = u.bbox,
+                    ctx = u.ctx;
+                ctx.save();
+                ctx.strokeStyle = G.AXIS_COLOR;
+                ctx.lineWidth = 2 * uPlot.pxRatio;
+                ctx.strokeRect(b.left, b.top, b.width, b.height);
+                ctx.restore();
+            }]
         }
     };
 
@@ -187,27 +183,26 @@ Unburyme.Graph.prototype.makeConfig = function()    {
 
 
 /**
- * @param {string} field Field to display on graph
- * @return {Array.<Object>} One Chart.js dataset per calculated loan
+ * @param {number} offset Months after the first payment month
+ * @return {Unburyme.Date}
  */
-Unburyme.Graph.prototype.makeDataSets = function(field) {
+Unburyme.Graph.prototype.dateAt = function(offset)  {
 
-    var datasets = [],
-        loans = this.loanApp.initLoanArray;
-    for(var i=0;i<loans.length;i++) {
-        var values = loans[i].results.getGraphData(field) || [],
-            points = [],
-            color = this.colorSet[i % this.colorSet.length];
-        for(var m=0;m<values.length;m++)
-            points.push({x: m, y: values[m]});
-        datasets.push({
-            label: loans[i].getName(),
-            data: points,
-            borderColor: color,
-            backgroundColor: color
-        });
-    }
-    return datasets;
+    var date = new Unburyme.Date();
+    for(var m=0;m<offset;m++)
+        date.increment();
+    return date;
+
+};
+
+
+/**
+ * @param {number} offset Months after the first payment month
+ * @return {string} e.g. "Feb 2027"
+ */
+Unburyme.Graph.prototype.monthLabel = function(offset)  {
+
+    return this.dateAt(offset).print();
 
 };
 
@@ -268,8 +263,9 @@ Unburyme.Graph.prototype.reset = function() {
     Unburyme.Dom.fadeOut(Unburyme.Dom.byId('graphViewOptions'), fadeSpeed);
     Unburyme.Dom.fadeOut(Unburyme.Dom.byId('graphTitle'), fadeSpeed);
     if(this.chart)  {
-        this.chart.data.datasets = [];
-        this.chart.update('none');
+        this.chart.destroy();
+        this.chart = null;
+        this.chartKey = '';
     }
     this.lastFieldGraphed = 'princRemaining';
 
