@@ -26,8 +26,9 @@ Unburyme.ResultBar = function(uid, loan, loanApp)   {
  */
 Unburyme.ResultBar.prototype.destroy = function()   {
 
-    $('#resultsContainer'+this.uid).slideUp(this.loanApp.config.slideSpeed, function(){
-        $(this).remove();
+    var el = Unburyme.Dom.byId('resultsContainer'+this.uid);
+    Unburyme.Dom.slideUp(el, this.loanApp.config.slideSpeed, function()   {
+        el.remove();
     });     
 
 };
@@ -71,10 +72,10 @@ Unburyme.ResultBar.prototype.drawMain = function(iterator,currentMonth,payment,p
     this.htmlMonthly += '</tr>\n';
         
     //Store graph data  
-    this.graphData_princRemaining.push([iterator,princRemaining.toFixed(2)]);
-    this.graphData_princPaid.push([iterator,princPaid.toFixed(2)]);
-    this.graphData_totalInterestPaid.push([iterator,this.totalInterestPaid.toFixed(2)]);
-    this.graphData_monthlyPayment.push([iterator,payment.toFixed(2)]);
+    this.graphData_princRemaining.push(Unburyme.roundCents(princRemaining));
+    this.graphData_princPaid.push(Unburyme.roundCents(princPaid));
+    this.graphData_totalInterestPaid.push(Unburyme.roundCents(this.totalInterestPaid));
+    this.graphData_monthlyPayment.push(Unburyme.roundCents(payment));
     
 };
 
@@ -93,16 +94,14 @@ Unburyme.ResultBar.prototype.drawFinal = function() {
     this.htmlMain += this.htmlMonthly;
     this.htmlMain += '</a>\n';
 
-    //Create #resultBar if it doesn't exist
-    if($('#resultBar'+this.uid).length) {
-        $('#resultsContainer'+this.uid).html(this.htmlMain);
-        $('#monthlyResults'+this.uid).css('display','none');            
-    }   
-    else    {
-        this.htmlMain = '<div class=\'resultsContainer\' id=\'resultsContainer'+this.uid+'\'>\n'+this.htmlMain+'</div>\n';
-        $('#allResultsContainer').append(this.htmlMain).fadeIn(this.loanApp.config.fadeSpeed);
-        $('#monthlyResults'+this.uid).css('display','none');
+    //Create the results container if it doesn't exist
+    var container = Unburyme.Dom.byId('resultsContainer'+this.uid);
+    if(!container)  {
+        container = Unburyme.Dom.create('<div class=\'resultsContainer\' id=\'resultsContainer'+this.uid+'\'></div>');
+        Unburyme.Dom.byId('allResultsContainer').appendChild(container);
     }
+    container.innerHTML = this.htmlMain;
+    Unburyme.Dom.byId('monthlyResults'+this.uid).style.display = 'none';
 };
 
 
@@ -121,7 +120,7 @@ Unburyme.ResultBar.prototype.clearGraphData = function()    {
 /**
  * Return requested graph data for appropriate field
  * @param {string} field Graph information that's requested
- * @return {number[]} Graph data
+ * @return {number[]} One value per month, starting with the first payment month
  */
 Unburyme.ResultBar.prototype.getGraphData = function(field) {
 
@@ -150,9 +149,10 @@ Unburyme.ResultBar.prototype.getGraphData = function(field) {
  */
 Unburyme.ResultBar.prototype.click = function() {
 
-        if($('#monthlyResults'+this.uid).css('display')=='none')
-            $('#monthlyResults'+this.uid).slideDown(this.loanApp.config.slideSpeed);
-        else
-            $('#monthlyResults'+this.uid).slideUp(this.loanApp.config.slideSpeed);
+    var el = Unburyme.Dom.byId('monthlyResults'+this.uid);
+    if(Unburyme.Dom.isShown(el))
+        Unburyme.Dom.slideUp(el, this.loanApp.config.slideSpeed);
+    else
+        Unburyme.Dom.slideDown(el, this.loanApp.config.slideSpeed);
 
 };

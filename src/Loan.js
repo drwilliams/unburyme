@@ -59,8 +59,9 @@ Unburyme.Loan.prototype.create = function() {
     html += '        </div>\n';
     html += '       </div>\n';
         
-    $('#loanBarInputContainer').append(html);
-    $('#loanbar'+this.uid).css('display','none').slideDown(this.loanApp.config.slideSpeed);
+    var el = Unburyme.Dom.create(html);
+    Unburyme.Dom.byId('loanBarInputContainer').appendChild(el);
+    Unburyme.Dom.slideDown(el, this.loanApp.config.slideSpeed);
 
 };
 
@@ -70,8 +71,9 @@ Unburyme.Loan.prototype.create = function() {
  */
 Unburyme.Loan.prototype.destroy = function()    {
 
-    $('#loanbar'+this.uid).slideUp(this.loanApp.config.slideSpeed, function(){
-        $(this).remove();
+    var el = Unburyme.Dom.byId('loanbar'+this.uid);
+    Unburyme.Dom.slideUp(el, this.loanApp.config.slideSpeed, function()   {
+        el.remove();
     });
     this.results.destroy();
     //Remove all uninitialization tags
@@ -200,10 +202,9 @@ Unburyme.Loan.prototype.validate = function(field, value)   {
     
 Unburyme.Loan.prototype.validateDisplay = function(field, isFieldValid)  {
 
-   if(isFieldValid)
-       $('#loan'+field+this.uid).removeClass('invalidField');
-   else
-       $('#loan'+field+this.uid).addClass('invalidField');
+    var el = Unburyme.Dom.byId('loan'+field+this.uid);
+    if(el)
+        el.classList.toggle('invalidField', !isFieldValid);
 };
 
 
@@ -211,8 +212,9 @@ Unburyme.Loan.prototype.cleanField = function(field)    {
 
     if(field=='loan')
         field = 'bar';
-    $('#loan'+field+this.uid).removeClass('uninitialized');
-    $('#loan'+field+this.uid).removeClass('invalidField');
+    var el = Unburyme.Dom.byId('loan'+field+this.uid);
+    if(el)
+        el.classList.remove('uninitialized', 'invalidField');
 };
 
 

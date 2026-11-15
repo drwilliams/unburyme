@@ -17,6 +17,17 @@ Unburyme.parseAmount = function(s) {
 
 
 /**
+ * @param {number} v
+ * @return {number} v rounded to the nearest cent
+ */
+Unburyme.roundCents = function(v)   {
+
+    return Math.round(v * 100) / 100;
+
+};
+
+
+/**
  * Unburyme.escapeHtml
  * @param {string} s
  * @return {string} s, safe to insert as HTML

@@ -128,9 +128,10 @@ Unburyme.LoanApp.prototype.updateTotalMinPayment = function()   {
     this.totalMinPayment = totalMin;
     if(this.totalMinPayment > this.totalPayment)    {
         this.totalPayment = this.totalMinPayment;
-        $('#totalMonthlyPayment').val(this.totalPayment);
-        $('#totalMonthlyPayment').removeClass('invalidField');
-           this.validPayment = true;    
+        var input = Unburyme.Dom.byId('totalMonthlyPayment');
+        input.value = this.totalPayment;
+        input.classList.remove('invalidField');
+        this.validPayment = true;
     }
 
 };
@@ -169,10 +170,7 @@ Unburyme.LoanApp.prototype.validatePayment = function(value)  {
  */
 Unburyme.LoanApp.prototype.validatePaymentDisplay = function(valid)   {
 
-    if(valid)
-        $('#totalMonthlyPayment').removeClass('invalidField');
-    else
-        $('#totalMonthlyPayment').addClass('invalidField');
+    Unburyme.Dom.byId('totalMonthlyPayment').classList.toggle('invalidField', !valid);
 
 };
     
@@ -232,8 +230,8 @@ Unburyme.LoanApp.prototype.calculatePrep = function()   {
             this.totalResults.calculate();
     
             // Hide Calculate button
-            if(!this.autoCalc)                                                                                   
-                $('.calculate').fadeOut(this.config.fadeSpeed);
+            if(!this.autoCalc)
+                Unburyme.Dom.fadeOut(Unburyme.Dom.byId('calculate'), this.config.fadeSpeed);
     
             // After first calculate, autocalculate subsequently if able
             this.autoCalc = 1; 
@@ -281,12 +279,9 @@ Unburyme.LoanApp.prototype.calculate = function(sortedLoans)    {
     }
 
     // Order the result bars by payoff priority
-    for(i=0;i<sortedLoans.length;i++)  {
-        if(i==0)
-            $('#allResultsContainer').prepend($('#resultsContainer'+sortedLoans[i].getUID()));
-        else
-            $('#resultsContainer'+sortedLoans[i].getUID()).insertAfter($('#resultsContainer'+sortedLoans[i-1].getUID()));
-    }
+    var allResults = Unburyme.Dom.byId('allResultsContainer');
+    for(i=sortedLoans.length-1;i>=0;i--)
+        allResults.insertBefore(Unburyme.Dom.byId('resultsContainer'+sortedLoans[i].getUID()), allResults.firstChild);
 
 };
 
@@ -337,7 +332,7 @@ Unburyme.LoanApp.prototype.clearData = function()   {
     this.graph.reset();
     this.totalResults.reset();
     this.refreshInitLoanArray();                                                                                    
-    $('.calculate').fadeIn(this.config.fadeSpeed);                                                            
+    Unburyme.Dom.fadeIn(Unburyme.Dom.byId('calculate'), this.config.fadeSpeed);
     this.createLoan();     
 
 };
@@ -347,22 +342,24 @@ Unburyme.LoanApp.prototype.clearData = function()   {
  * Sets up feedback when it is impossible to calculate given the parameters
  */
 Unburyme.LoanApp.prototype.impossibleCalcDisplay = function() {
-    
-    var slideSpeed = this.config.slideSpeed;
 
-    if($('#error').length == 0) {
-        var html = '<div id=\'error\'>\n';
-        html +=    '    <p>One or more of the current loans will take <strong>centuries</strong> to pay off.</p>';
-        html +=    '    <p>Please use more reasonable loan information.</p>';
-        html +=    '</div>';
-        $('#enclosure').prepend(html);
-        $('#error').css('display', 'none');
+    var slideSpeed = this.config.slideSpeed,
+        error = Unburyme.Dom.byId('error');
+
+    if(!error)  {
+        error = Unburyme.Dom.create('<div id=\'error\' role=\'alert\'>' +
+            '<p>One or more of the current loans will take <strong>centuries</strong> to pay off.</p>' +
+            '<p>Please use more reasonable loan information.</p></div>');
+        error.style.display = 'none';
+        var enclosure = Unburyme.Dom.byId('enclosure');
+        enclosure.insertBefore(error, enclosure.firstChild);
     }
-    $('#error').slideDown(this.config.slideSpeed);
+    if(!Unburyme.Dom.isShown(error))
+        Unburyme.Dom.slideDown(error, slideSpeed);
     if(this.errorTimeout)
         window.clearTimeout(this.errorTimeout);
     this.errorTimeout = window.setTimeout(function()    {
-        $('#error').slideUp(slideSpeed);
+        Unburyme.Dom.slideUp(error, slideSpeed);
     }, 3000);
 
 };

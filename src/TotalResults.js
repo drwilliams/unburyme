@@ -31,8 +31,9 @@ Unburyme.TotalResults.prototype.draw = function()   {
     html += '   <div class="payoffDateText">debt free by</div><div class="payoffDate">'+this.finalPayOffDate.print()+'</div>\n';
     html += '   <div class="totalInterestText">total interest paid</div><div class="totalInterest">$'+this.totalInterest.toFixed(2)+'</div>\n';
     html += '</div>\n';
-    $('#totalResultsContainer').fadeIn(this.loanApp.config.fadeSpeed);
-    $('#totalResultsContainer').html(html);
+    var container = Unburyme.Dom.byId('totalResultsContainer');
+    container.innerHTML = html;
+    Unburyme.Dom.fadeIn(container, this.loanApp.config.fadeSpeed);
 
 };
     
@@ -51,6 +52,6 @@ Unburyme.TotalResults.prototype.clearData = function()  {
 Unburyme.TotalResults.prototype.reset = function()  {
 
     this.clearData();
-    $('#totalResultsContainer').fadeOut(this.loanApp.config.fadeSpeed);
+    Unburyme.Dom.fadeOut(Unburyme.Dom.byId('totalResultsContainer'), this.loanApp.config.fadeSpeed);
 
 }

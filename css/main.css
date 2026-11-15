@@ -179,12 +179,57 @@ h2	{
 }
 
 #paymentSlider	{
+	position: relative;
 	z-index: 2;
 	display: block;
 	width: 120px;
-	height: 5px;
+	height: 16px;
 	left: 140px;
 	top: 45px;
+	margin: -8px 0 0 0;
+	padding: 0;
+	background: transparent;
+	-webkit-appearance: none;
+	appearance: none;
+	cursor: pointer;
+}
+
+#paymentSlider::-webkit-slider-runnable-track	{
+	height: 5px;
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+}
+
+#paymentSlider::-moz-range-track	{
+	height: 5px;
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+}
+
+#paymentSlider::-webkit-slider-thumb	{
+	-webkit-appearance: none;
+	appearance: none;
+	width: 14px;
+	height: 18px;
+	margin-top: -7px;
+	background: #f6f6f6;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+}
+
+#paymentSlider::-moz-range-thumb	{
+	width: 12px;
+	height: 16px;
+	background: #f6f6f6;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+}
+
+#paymentSlider:focus-visible	{
+	outline: 2px solid #19d7f5;
+	outline-offset: 2px;
 }
 
 /*
@@ -627,9 +672,10 @@ tr.alternateRows1	{
 }
 
 #graph	{
+	position: relative;
 	width: 600px;
 	height: 300px;
-	left: 100px;
+	margin: 0 auto;
 }
 
 #graphTitle	{
