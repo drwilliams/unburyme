@@ -17,8 +17,8 @@ Unburyme.TotalResults.prototype.calculate = function()  {
 
     this.clearData();
     for(var i=0;i<this.loanApp.initLoanCount();i++) {
-        this.finalPayOffDate = this.finalPayOffDate.getLatest(this.loanApp.loanArray[i].results.payOffDate);
-        this.totalInterest += this.loanApp.loanArray[i].results.totalInterestPaid;
+        this.finalPayOffDate = this.finalPayOffDate.getLatest(this.loanApp.initLoanArray[i].results.payOffDate);
+        this.totalInterest += this.loanApp.initLoanArray[i].results.totalInterestPaid;
     }
     this.draw();
 

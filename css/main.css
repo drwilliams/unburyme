@@ -8,6 +8,11 @@ body	{
     text-align: center;
 }
 
+/* Matches the sizing the layout was designed under (quirks mode) */
+input	{
+	box-sizing: border-box;
+}
+
 #enclosure	{
 	background: #fff;
 	width:800px;

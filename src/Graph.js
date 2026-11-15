@@ -80,11 +80,11 @@ Unburyme.Graph.prototype.drawTitle = function(field)    {
  */
 Unburyme.Graph.prototype.makeDataSet = function()   {
     
-    for(var i=0;i<this.loanApp.loanCount;i++)   {
-        var dataDict = [];
-        dataDict['label'] = this.loanNames[i];
-        dataDict['data'] = this.loanData[i];
-        this.loanDataSet.push(dataDict);
+    for(var i=0;i<this.loanData.length;i++)   {
+        this.loanDataSet.push({
+            label: Unburyme.escapeHtml(this.loanNames[i]),
+            data: this.loanData[i]
+        });
     }
 
 };

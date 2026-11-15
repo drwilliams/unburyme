@@ -27,14 +27,15 @@ $(function()    {
     });
 
 
-    $('.createLoanPlus').live('click', function ()  {
+    $(document).delegate('.createLoanPlus', 'click', function ()  {
 
         loanApp.createLoan();
     });
 
     
-    $('.destroyLoan').live('click', function () {
+    $(document).delegate('.destroyLoan', 'click', function (e) {
 
+        e.preventDefault();
         var deleteID = $(this).attr('id').substr(6);
         loanApp.destroyLoan(deleteID);
         calculate();
@@ -72,7 +73,7 @@ $(function()    {
     
     // TODO 
     // Not a fan of log curve, needs tweeked; linear for now
-    logPaymentToPosition = function(payment)    {
+    var logPaymentToPosition = function(payment)    {
         
         //return (payment.log2() / loanApp.config.sliderMax.log2()) * 1000;
         return payment;
@@ -81,7 +82,7 @@ $(function()    {
 
     // TODO
     // Again, linear for now
-    logPositionToPayment = function(pos)    {
+    var logPositionToPayment = function(pos)    {
         
         /*
         var payment = (pos / 1000) * loanApp.config.sliderMax.log2();
@@ -94,7 +95,7 @@ $(function()    {
 
 
     // Viewing Results
-    $('.resultsContainer').live('click', function ()    {
+    $(document).delegate('.resultsContainer', 'click', function ()    {
         var uid = $(this).attr('id').substr(16);
         loanApp.getLoan(uid).results.click();
     });
@@ -116,17 +117,18 @@ $(function()    {
 
 
     // Events
-    $('#totalMonthlyPayment').live('change', function() {
+    $('#totalMonthlyPayment').change(function() {
 
         var value = $(this).val();
         if(loanApp.validatePayment(value))   {
+            value = Unburyme.parseAmount(value);
             loanApp.updatePayment(value);
             $('#paymentSlider').slider('option','value',logPaymentToPosition(value));
             calculate();    
         }
     });
 
-    $('#loanBarInputContainer input').live('change', function() {
+    $('#loanBarInputContainer').delegate('input', 'change', function() {
 
         var uid;
         var field;
@@ -155,7 +157,7 @@ $(function()    {
         // Validate input
         if(loanApp.getLoan(uid).validate(field,value))  {
 
-            loanApp.updateLoan(uid,field,formatNumber(value));
+            loanApp.updateLoan(uid,field,field=='name' ? value : Unburyme.parseAmount(value));
             if(field=='minPayment')
                 $('#paymentSlider').slider('option','value',logPaymentToPosition(loanApp.totalPayment));
         }
@@ -200,15 +202,6 @@ $(function()    {
             loanApp.updateLoan(uid,field,value);
         }
     };
-
-    var formatNumber = function(s)  {
-        
-        s = s.replace(' ','');
-        s = s.replace(',','');
-        s = parseFloat(s);
-        return s;
-    };
-
 
     // Calculate, Links, Tooltip
     $('.calculate').click(function ()   {

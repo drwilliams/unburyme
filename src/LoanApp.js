@@ -156,22 +156,10 @@ Unburyme.LoanApp.prototype.updatePayment = function(value)  {
  */
 Unburyme.LoanApp.prototype.validatePayment = function(value)  {
 
-    var validChars = "0123456789., ",
-        validTest = true,                               
-        character = null; 
-    for(i=0;i<value.length && validTest==true;i++)  {   
-        character = value.charAt(i);          
-        if(validChars.indexOf(character) == -1)           
-            validTest = false;                                              
-    }
-    if(value=='')
-        validTest = false;      
+    var validTest = !isNaN(Unburyme.parseAmount(value));
     this.validatePaymentDisplay(validTest);
-    if(validTest)
-        this.validPayment = true;
-    else
-        this.validPayment = false;
-    return validTest;      
+    this.validPayment = validTest;
+    return validTest;
 };
 
 
@@ -231,7 +219,6 @@ Unburyme.LoanApp.prototype.calculatePrep = function()   {
         
     if(this.areLoansValid() && this.isPaymentValid())    {
         // Resort and reset
-        var monthlyPayment = $('#totalMonthlyPayment').val();
         var sortedLoans = this.sortLoans();
         this.extraPayment = this.totalPayment - this.totalMinPayment;
         this.rollover = 0;
@@ -246,7 +233,7 @@ Unburyme.LoanApp.prototype.calculatePrep = function()   {
     
             // Hide Calculate button
             if(!this.autoCalc)                                                                                   
-                $('.calculate').fadeOut(Unburyme.Config.fadeSpeed);
+                $('.calculate').fadeOut(this.config.fadeSpeed);
     
             // After first calculate, autocalculate subsequently if able
             this.autoCalc = 1; 
@@ -257,148 +244,61 @@ Unburyme.LoanApp.prototype.calculatePrep = function()   {
     
 
 /**
- * Calculates all current values -- does a brunt of the work
- * TODO This is a nightmare and needs cleaned up
- * @param {number[]} sortedLoans An array of the UID of loans
+ * Calculates the payoff schedule and hands each month's results to the ResultBars
+ * @param {Unburyme.Loan[]} sortedLoans Initialized loans in payoff priority order
  */
 Unburyme.LoanApp.prototype.calculate = function(sortedLoans)    {
-    
-    var currentMonth = new Unburyme.Date(),
-        calcName = [],
-        calcBalance = [],
-        calcInterest = [],
-        calcMinPayment = [],
-        calcInterestPaid = [],
-        calcPrincPaid = [],
-        calcMonthlyPayment = [],
-        finishedCalculating = [],
-        remainingLoans = this.initLoanCount(),
-        iterator = 0;
 
-    // Initialize and draw
-    for(var i=0;i<this.initLoanCount();i++) {
-        sortedLoans[i].results.totalInterestPaid = 0;
-        sortedLoans[i].results.drawStart();
-        calcName[i] = sortedLoans[i].getName();
-        calcBalance[i] = sortedLoans[i].getBalance();
-        calcInterest[i] = sortedLoans[i].getInterest() * 0.01;
-        calcMinPayment[i] = sortedLoans[i].getMinPayment();
-        finishedCalculating[i] = 0;
+    var input = [],
+        i, j;
+    for(i=0;i<sortedLoans.length;i++)  {
+        input.push({
+            balance: sortedLoans[i].getBalance(),
+            interest: sortedLoans[i].getInterest(),
+            minPayment: sortedLoans[i].getMinPayment()
+        });
     }
 
-    while(remainingLoans && this.possibleCalc)  {
-        var focusPayment = this.totalPayment;
-        var firstPaymentPass = true;
-        //Set monthly payments
-        for(var i=0;i<this.initLoanCount();i++) {
-            if(finishedCalculating[i]==0)   {
-                calcInterestPaid[i] = (calcBalance[i] * (calcInterest[i]/12));
-                calcPrincPaid[i] = 0;
-                sortedLoans[i].results.totalInterestPaid += calcInterestPaid[i];
-                calcMonthlyPayment[i] = calcMinPayment[i];
-                focusPayment = focusPayment - calcMinPayment[i];
-            }
-        }
-            // Loops to ensure all focus payment is distributed
-        while((focusPayment>0 || firstPaymentPass) && remainingLoans)   {
-            // Give rollover/focus money to priority loans
-            for(var i=0;i<this.initLoanCount();i++) {
-                if(focusPayment > 0 && calcBalance[i] > 0)  {
-                    calcMonthlyPayment[i] += focusPayment;
-                    focusPayment = 0;
-                }
-            }
-
-            // Payment pass
-            for(var i=0;i<this.initLoanCount();i++) {
-                if(calcBalance[i] > 0)  {
-                    if(calcMonthlyPayment[i] - calcInterestPaid[i] < calcBalance[i])    {
-                        calcPrincPaid[i] = calcMonthlyPayment[i] - calcInterestPaid[i];
-                        calcBalance[i] -= calcPrincPaid[i];
-                    }
-                    else    {
-                        calcPrincPaid[i] = calcBalance[i];
-                        focusPayment = calcMonthlyPayment[i] - calcBalance[i] - calcInterestPaid[i];
-                        calcMonthlyPayment[i] = calcBalance[i] + calcInterestPaid[i];
-                        calcBalance[i] = 0;
-                        remainingLoans -= 1;
-                        sortedLoans[i].results.payOffDate.setDate(currentMonth.getYear(),currentMonth.getMonth());  
-                    }
-                }
-            }
-            firstPaymentPass = false;
-            } // while ((focusPayment>0 || firstPaymentPass) && remainingLoans)
-
-        // Send monthly results to ResultBar
-        for(var i=0;i<this.initLoanCount();i++) {
-            if(finishedCalculating[i]==0)   {
-                if(calcBalance[i]==0)
-                    finishedCalculating[i]=1;
-                sortedLoans[i].results.drawMain(iterator,currentMonth,calcMonthlyPayment[i],calcPrincPaid[i],calcInterestPaid[i],calcBalance[i])
-            }
-        }
-        currentMonth.increment();
-        iterator++;
-           
-        // Check to see current date is < year 2200 to prevent ridiculous calls
-        if(currentMonth.getYear() > 2200)
-            this.possibleCalc = false;
-    }// while(remainingLoans)
-    
-
-    if(this.possibleCalc)    {
-
-        // Draw final
-        for(var i=0;i<this.initLoanCount();i++) {
-            sortedLoans[i].results.drawFinal();
-        }
-   
-        //Move around the divs
-        for(var l=0;l<this.initLoanCount();l++) {
-            if(l==0)
-                $('#allResultsContainer').prepend($('#resultsContainer'+sortedLoans[l].getUID()));
-            else
-                $('#resultsContainer'+sortedLoans[l].getUID()).insertAfter($('#resultsContainer'+sortedLoans[l-1].getUID()));
-        }
-    }
-    else
+    var schedule = Unburyme.computeSchedule(input, this.totalPayment, new Unburyme.Date());
+    if(!schedule.possible)  {
+        this.possibleCalc = false;
         this.impossibleCalcDisplay();
+        return;
+    }
+
+    for(i=0;i<sortedLoans.length;i++)  {
+        var results = sortedLoans[i].results,
+            loanSchedule = schedule.loans[i];
+        results.drawStart();
+        for(j=0;j<loanSchedule.rows.length;j++)    {
+            var row = loanSchedule.rows[j];
+            results.totalInterestPaid = row.totalInterest;
+            results.drawMain(j, row.date, row.payment, row.principal, row.interest, row.balance);
+        }
+        results.totalInterestPaid = loanSchedule.totalInterest;
+        results.payOffDate.setDate(loanSchedule.payOffDate.getYear(), loanSchedule.payOffDate.getMonth());
+        results.drawFinal();
+    }
+
+    // Order the result bars by payoff priority
+    for(i=0;i<sortedLoans.length;i++)  {
+        if(i==0)
+            $('#allResultsContainer').prepend($('#resultsContainer'+sortedLoans[i].getUID()));
+        else
+            $('#resultsContainer'+sortedLoans[i].getUID()).insertAfter($('#resultsContainer'+sortedLoans[i-1].getUID()));
+    }
+
 };
 
 
 /**
- * Sorts this.loanArray according to sort type
- * TODO Sloppy O(n^2) sort, needs improvement
- * @return {number[]} An array of sorted unique IDs
+ * Sorts the initialized loans according to the payment type
+ * @return {Unburyme.Loan[]} Loans in payoff priority order
  */
 Unburyme.LoanApp.prototype.sortLoans = function()   {
-    
-    var sortedArray = [],
-        storedIDs = [],
-        sortField = '';
-    if(this.paymentType=='avalanche')
-        sortField = 'interest';
-    else
-        sortField = 'balance';
-        
-    while(sortedArray.length < this.loanCount)  {
-        var maxValue = 0,
-            currentMaxUID = 0;
 
-        for(var s=0;s<this.initLoanCount();s++)     {
-            var loanID = this.initLoanArray[s].uid;
-            if(storedIDs.indexOf(loanID) == -1 && this.getInfo(loanID,sortField) > maxValue)    {
-                currentMaxUID = loanID;
-                maxValue = this.getInfo(loanID,sortField);
-            }
-        }
-        storedIDs.push(currentMaxUID);
-        sortedArray.push(this.getLoan(currentMaxUID));
-    }
-    if(this.paymentType=='avalanche')
-        return sortedArray;
-    else
-        return sortedArray.reverse();   
+    return Unburyme.sortForPaymentType(this.initLoanArray, this.paymentType);
+
 };
 
 
@@ -437,7 +337,7 @@ Unburyme.LoanApp.prototype.clearData = function()   {
     this.graph.reset();
     this.totalResults.reset();
     this.refreshInitLoanArray();                                                                                    
-    $('.calculate').fadeIn(Unburyme.Config.fadeSpeed);                                                            
+    $('.calculate').fadeIn(this.config.fadeSpeed);                                                            
     this.createLoan();     
 
 };

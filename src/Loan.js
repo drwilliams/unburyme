@@ -71,7 +71,7 @@ Unburyme.Loan.prototype.create = function() {
 Unburyme.Loan.prototype.destroy = function()    {
 
     $('#loanbar'+this.uid).slideUp(this.loanApp.config.slideSpeed, function(){
-        $('#loanbar'+this.uid).remove();
+        $(this).remove();
     });
     this.results.destroy();
     //Remove all uninitialization tags
@@ -84,8 +84,8 @@ Unburyme.Loan.prototype.destroy = function()    {
     // Should be removed from array; sanity check
     this.deleted = 1;
 
-    for(var i=0;i<5;i++)        
-        this.isInitialized[i] = 0;
+    for(var key in this.isInitialized)
+        this.isInitialized[key] = 0;
 
 };
 
@@ -187,26 +187,9 @@ Unburyme.Loan.prototype.calculate = function()  {
 
 Unburyme.Loan.prototype.validate = function(field, value)   {
 
-    var validChars = "0123456789., ",
-        validTest = true,
-        character;
-    for(i=0;i<value.length && validTest==true;i++)  {
-        character = value.charAt(i);
-        if(validChars.indexOf(character) == -1)
-            validTest = false;
-    }
-    if(value=='')   {
-        validTest = false;
-        $('input .'+field).val('');
-    }
-    if(field=='name')
-        validTest = true;
-    if(validTest)
-        this.isValid[field] = 1;
-    else    
-        this.isValid[field] = 0;
-    if(this.isValid['balance'] && this.isValid['minPayment'] && this.isValid['interest'])
-        this.isValid['loan'] = 1;
+    var validTest = field == 'name' || !isNaN(Unburyme.parseAmount(value));
+    this.isValid[field] = validTest ? 1 : 0;
+    this.isValid['loan'] = (this.isValid['balance'] && this.isValid['minPayment'] && this.isValid['interest']) ? 1 : 0;
 
     // Call validateDisplay to handle visual representation
     this.validateDisplay(field,validTest);

@@ -27,7 +27,7 @@ Unburyme.ResultBar = function(uid, loan, loanApp)   {
 Unburyme.ResultBar.prototype.destroy = function()   {
 
     $('#resultsContainer'+this.uid).slideUp(this.loanApp.config.slideSpeed, function(){
-        $('#resultsContainer'+this.uid).remove();
+        $(this).remove();
     });     
 
 };
@@ -85,7 +85,7 @@ Unburyme.ResultBar.prototype.drawFinal = function() {
         
     this.htmlMonthly += '</table></div>';
     this.htmlMain = '       <a class=\'resultBarLink\' ><div class=\'resultBar\' id=\'resultBar'+this.uid+'\'>\n';
-    this.htmlMain += '      <div class=\'loanName\'>'+this.loan.getName()+'</div>\n';
+    this.htmlMain += '      <div class=\'loanName\'>'+Unburyme.escapeHtml(this.loan.getName())+'</div>\n';
     this.htmlMain += '      <div class=\'payoffDateText\'>paid off by</div><div class=\'payoffDate\'>'+this.payOffDate.print()+'</div>\n';
     this.htmlMain += '      <div class=\'totalInterestText\'>total interest paid</div><div class=\'totalInterest\'>$'+this.totalInterestPaid.toFixed(2)+'</div>\n';
     this.htmlMain += '      <div class=\'resultBarDetailsClick\'>click for details</div>';
