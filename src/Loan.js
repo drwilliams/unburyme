@@ -39,26 +39,28 @@ Unburyme.Loan   = function(uid, loanApp)    {
  */
 Unburyme.Loan.prototype.create = function() {
 
-    var html = '<div id=\'loanbar'+this.uid+'\' class=\'loanBarInput uninitialized\'>\n';
-    html += '   <a href=\'#\' class=\'destroyLoan\' id=\'delete'+this.uid+'\'><div class=\'destroyLoanX\'></div></a>\n';
-    html += '   <div class=\'loanName\'>\n';
-    html += '                   <div class=\'fieldTitle\'>Loan Name</div>\n'
-    html += '                   <div class=\'fieldInput\'><input id=\'loanname'+this.uid+'\' class=\'name\' /></div>\n';
-    html += '           </div>\n';
-    html += '   <div class=\'currentBalance\'>\n';
-    html += '                   <div class=\'fieldTitle\'>Current Balance</div>\n';
-    html += '                   <div class=\'fieldInput\'>$<input id=\'loanbalance'+this.uid+'\' class=\'balance  uninitialized\' /></div>\n';
-    html += '           </div>\n';
-    html += '           <div class=\'minMonthlyPayment\'>\n';
-    html += '                   <div class=\'fieldTitle\'>Min. Payment</div>\n';
-    html += '                   <div class=\'fieldInput\'>$<input id=\'loanminPayment'+this.uid+'\' class=\'minPayment  uninitialized\' /></div>\n';
-    html += '           </div>\n';
-    html += '           <div class=\'interest\'>\n';
-    html += '                   <div class=\'fieldTitle\'>Interest</div>\n';
-    html += '                   <div class=\'fieldInput\'>%<input id=\'loaninterest'+this.uid+'\' class=\'interest  uninitialized\' /></div>\n';
-    html += '        </div>\n';
-    html += '       </div>\n';
-        
+    var uid = this.uid,
+        field = function(name, label, extraClass, prefix, suffix, placeholder)  {
+            var id = 'loan' + name + uid,
+                input = '<input id=\'' + id + '\' class=\'' + name + extraClass + '\' autocomplete=\'off\' placeholder=\'' + placeholder + '\'' +
+                    (name == 'name' ? '' : ' inputmode=\'decimal\'') + ' />';
+            if(prefix || suffix)
+                input = '<div class=\'affix\'>' + (prefix ? '<span aria-hidden=\'true\'>' + prefix + '</span>' : '') + input +
+                    (suffix ? '<span aria-hidden=\'true\'>' + suffix + '</span>' : '') + '</div>';
+            return '<div class=\'field' + (name == 'name' ? ' fieldName' : '') + '\'><label for=\'' + id + '\'>' + label + '</label>' + input + '</div>';
+        };
+
+    var html = '<div id=\'loanbar' + uid + '\' class=\'loanBarInput uninitialized\'><div class=\'loanRow\'>' +
+        '<div class=\'loanFields\'>' +
+            field('name', 'Name', '', '', '', 'Loan ' + (uid + 1)) +
+            field('balance', 'Balance', ' uninitialized', '$', '', '0.00') +
+            field('minPayment', 'Min. payment', ' uninitialized', '$', '', '0.00') +
+            field('interest', 'Interest rate', ' uninitialized', '', '%', '0.0') +
+        '</div>' +
+        '<button type=\'button\' class=\'destroyLoan\' id=\'delete' + uid + '\' aria-label=\'Remove loan\' title=\'Remove loan\'>' +
+            '<svg viewBox=\'0 0 16 16\' aria-hidden=\'true\'><path d=\'M4 4l8 8M12 4l-8 8\' /></svg></button>' +
+        '</div></div>';
+
     var el = Unburyme.Dom.create(html);
     Unburyme.Dom.byId('loanBarInputContainer').appendChild(el);
     Unburyme.Dom.slideDown(el, this.loanApp.config.slideSpeed);

@@ -133,8 +133,29 @@ Unburyme.LoanApp.prototype.updateTotalMinPayment = function()   {
         input.classList.remove('invalidField');
         this.validPayment = true;
     }
+    this.updatePaymentHint();
 
 };
+
+/**
+ * Tells the user how their monthly payment compares to the minimums
+ */
+Unburyme.LoanApp.prototype.updatePaymentHint = function()   {
+
+    var hint = Unburyme.Dom.byId('paymentHint');
+    if(!hint)
+        return;
+    if(!this.totalMinPayment)
+        hint.textContent = 'What you can put towards all of your loans each month.';
+    else    {
+        var extra = this.totalPayment - this.totalMinPayment;
+        hint.textContent = 'Minimum payments add up to ' + Unburyme.formatMoney(this.totalMinPayment, true) + '. ' +
+            (extra > 0 ? 'The extra ' + Unburyme.formatMoney(extra, true) + ' goes to your priority loan.'
+                       : 'Anything above that pays your loans off faster.');
+    }
+
+};
+
 
 /**
  * Updates monthly payment
@@ -226,6 +247,7 @@ Unburyme.LoanApp.prototype.calculatePrep = function()   {
         this.possibleCalc = true;
         this.calculate(sortedLoans);
         if(this.possibleCalc == true)  {
+            Unburyme.Dom.fadeIn(Unburyme.Dom.byId('results'), this.config.fadeSpeed);
             this.graph.draw();
             this.totalResults.calculate();
     
@@ -275,7 +297,7 @@ Unburyme.LoanApp.prototype.calculate = function(sortedLoans)    {
         }
         results.totalInterestPaid = loanSchedule.totalInterest;
         results.payOffDate.setDate(loanSchedule.payOffDate.getYear(), loanSchedule.payOffDate.getMonth());
-        results.drawFinal();
+        results.drawFinal(i);
     }
 
     // Order the result bars by payoff priority
@@ -329,6 +351,7 @@ Unburyme.LoanApp.prototype.clearData = function()   {
 
     this.autoCalc = 0;
     this.rolloverMonth.setCurrent();
+    Unburyme.Dom.fadeOut(Unburyme.Dom.byId('results'), this.config.fadeSpeed);
     this.graph.reset();
     this.totalResults.reset();
     this.refreshInitLoanArray();                                                                                    
@@ -348,8 +371,8 @@ Unburyme.LoanApp.prototype.impossibleCalcDisplay = function() {
 
     if(!error)  {
         error = Unburyme.Dom.create('<div id=\'error\' role=\'alert\'>' +
-            '<p>One or more of the current loans will take <strong>centuries</strong> to pay off.</p>' +
-            '<p>Please use more reasonable loan information.</p></div>');
+            '<p><strong>At this payment, a loan would take over 100 years to pay off.</strong></p>' +
+            '<p>Its interest is growing faster than it is being paid down. Try a higher monthly or minimum payment.</p></div>');
         error.style.display = 'none';
         var enclosure = Unburyme.Dom.byId('enclosure');
         enclosure.insertBefore(error, enclosure.firstChild);

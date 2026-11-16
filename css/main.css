@@ -1,709 +1,724 @@
-body	{
-	background-image: url('../img/bg.png');
-	margin: 0px;
-	padding: 0px;
-	font-family: 'Droid Sans', arial, serif;
-	color: #444;
-	font-size:100%;
-    text-align: center;
-}
-
-/* Matches the sizing the layout was designed under (quirks mode) */
-input	{
-	box-sizing: border-box;
-}
-
-#enclosure	{
-	background: #fff;
-	width:800px;
-	margin: 0 auto;
-	min-height: 400px;
-	height: auto !important;
-	height: 400px;
-	border: 2px #d4d4d4 solid;
-    text-align: left;
-	-webkit-box-shadow:0px 0px 50px  #ccc;
-	-moz-box-shadow:0px 0px 50px #ccc;
-	box-shadow:0px 0px 50px #ccc;
-}
-
-#header	{
-	width: 800px;
-	height: 120px;
-	margin: 0px;
-	padding: 0px;
-	text-align: left;
-}
-
-#footer	{
-	width: 800px;
-	height: 100px;
-	margin: 0px;
-	padding: 0px;
-	text-align: left;
-}
-
-
-
-#controlBar	{
-	position: relative;
-	left: 48px;
-	width: 704px;
-	height: 74px;
-	background-image: url('../img/blueTab.png');
-}
-
-h1 {
-	font-family: 'Droid Sans', arial, serif;
-	font-weight:bold;
-	font-size:80px;
-	color:#23d8f6;
-	letter-spacing: -0.1em;
-	position: relative;
-	left: 48px;
-	text-shadow: 3px 3px 3px #93f0ff;
-	margin: 0px;
-	display: inline;
-}
-
-h2	{
-	font-weight:bold;
-	font-size:30px;
-	letter-spacing: -0.1em;
-	top: 0px;
-	left: 60px;
-	margin: 0px;
-	color: #93f0ff;
-	text-shadow: 1px 1px 1px #23d8f6;
-	position: relative;
-	display: inline;
-}
-
-.help	{
-	position: absolute;
-	display: block;
-	width: 17px;
-	height: 17px;
-	top: 7px;
-	background-image: url('../img/help.png');
-	cursor: pointer;
-}
-
-#totalMonthlyPaymentHelp	{
-	left:225px;
-}
-
-#paymentTypeHelp	{
-	left:145px;
-}
-
-.totalMonthlyPayment	{
-	width: 300px;
-	position: absolute;
-	left: 0px;
-}
-
-.fieldTitle
-	{
-	font-size: 1.1em;
-	position: absolute;
-	top: 5px;
-	left: 10px;
-	color: #fff;
-	font-weight: bold;
-}
-
-.totalMonthlyPayment .fieldInput,
-.loanBarInput .fieldInput	{
-	font-size: 1.20em;
-	position: absolute;
-	color: #fff;
-	top: 27px;
-	left: 10px;
-	font-weight: bold;
-}
-
-.totalMonthlyPayment .fieldInput input	{
-	position: relative;
-	left: 5px;
-	top: 3px;
-	height: 35px;
-	width: 100px;
-	font-size: 1.20em;
-	color: #444;
-}
-
-.paymentType	{
-	position: absolute;
-	width:400px;
-	left: 300px;
-}
-
-.paymentTypeSelect	{
-	position: absolute;
-	left: 10px;
-	top: 29px;
-	height: 50px;
-}
-
-.paymentTypeSelect a	{
-	text-decoration:none;
-}
-
-.paymentTypeButton	{
-	width: 120px;
-	display: block;
-	padding-top: 3px;
-	height: 30px;
-	font-size: 1.2em;
-	border: 1px solid #d4d4d4;
-	font-weight: bold;
-	position: absolute;
-	vertical-align: middle;
-    text-align: center;
-	cursor: pointer;
-}
-
-#snowball	{
-	left: 120px;
-}
-
-.selectedPaymentType	{
-	color: #fff;
-	background-color: #99f1ff;
-}
-
-.unselectedPaymentType	{
-	color: #a4a4a4;
-	background-color: #badbe0;
-}
-
-#paymentSlider	{
-	position: relative;
-	z-index: 2;
-	display: block;
-	width: 120px;
-	height: 16px;
-	left: 140px;
-	top: 45px;
-	margin: -8px 0 0 0;
-	padding: 0;
-	background: transparent;
-	-webkit-appearance: none;
-	appearance: none;
-	cursor: pointer;
-}
-
-#paymentSlider::-webkit-slider-runnable-track	{
-	height: 5px;
-	background: #fff;
-	border: 1px solid #ddd;
-	border-radius: 4px;
-}
-
-#paymentSlider::-moz-range-track	{
-	height: 5px;
-	background: #fff;
-	border: 1px solid #ddd;
-	border-radius: 4px;
-}
-
-#paymentSlider::-webkit-slider-thumb	{
-	-webkit-appearance: none;
-	appearance: none;
-	width: 14px;
-	height: 18px;
-	margin-top: -7px;
-	background: #f6f6f6;
-	border: 1px solid #ccc;
-	border-radius: 4px;
-}
-
-#paymentSlider::-moz-range-thumb	{
-	width: 12px;
-	height: 16px;
-	background: #f6f6f6;
-	border: 1px solid #ccc;
-	border-radius: 4px;
-}
-
-#paymentSlider:focus-visible	{
-	outline: 2px solid #19d7f5;
-	outline-offset: 2px;
-}
-
 /*
- * Loan Bar Input
+ * unbury.me
  */
 
-#loanBarInputContainer	{
-	width: 800px;
+:root   {
+    --bg: #f4f6f8;
+    --surface: #ffffff;
+    --surface-2: #eef2f4;
+    --border: #dfe5e9;
+    --border-strong: #c6d0d6;
+    --text: #13212a;
+    --muted: #5a6a74;
+    --accent: #077c93;
+    --accent-hover: #05697d;
+    --accent-soft: #e0f3f6;
+    --on-accent: #ffffff;
+    --danger: #b42318;
+    --danger-soft: #fdeceb;
+    --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+    --shadow-lg: 0 12px 32px rgba(16, 24, 40, 0.14);
+    --radius: 14px;
+    --radius-sm: 10px;
+    color-scheme: light;
 }
 
-.createLoanPlus	{
-	position: relative;
-	width: 90px;
-	height: 18px;
-	left: 48px;
-	background-color: #89eafa;
-	color: #fff;
-	font-weight: bold;
-	text-decoration: none;	
-	text-align: left;
-	border-left: 2px solid #5ae8ff;
-	border-right: 2px solid #5ae8ff;
-	border-bottom: 2px solid #5ae8ff;
-	margin: 0px;
-	cursor: pointer;
+@media (prefers-color-scheme: dark)  {
+    :root   {
+        --bg: #0d1417;
+        --surface: #141e22;
+        --surface-2: #1b282d;
+        --border: #24343a;
+        --border-strong: #345058;
+        --text: #e5edf0;
+        --muted: #93a5ad;
+        --accent: #3cc3db;
+        --accent-hover: #6ad3e6;
+        --accent-soft: #12333a;
+        --on-accent: #052a31;
+        --danger: #f47a70;
+        --danger-soft: #3a1a18;
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
+        color-scheme: dark;
+    }
 }
 
-.loanBarInput	{
-	position: relative;
-	left: 48px;
-	width: 723px;
-	height: 72px;
-	background-image: url('../img/lightBlueTab.png');
-	background-repeat: no-repeat;
-}
-.loanBarInput .destroyLoanX	{
-	position: absolute;
-	left: 704px;
-	width:19px;
-	height:22px;
-	background-image: url('../img/blueX.png');
-	cursor: pointer;
-}
-.loanBarInput .input	{
-	position: relative;
-        left: 10px;
-        top: 5px;
-        height: 30px;
-        font-size: 1.20em;
-        color: #444;
+*, *::before, *::after  {
+    box-sizing: border-box;
 }
 
-.loanBarInput .fieldInput input  {
-        position: relative;
-        top: 3px;
-        height: 35px;
-        font-size: 1.20em;
-        color: #444;
+html    {
+    -webkit-text-size-adjust: 100%;
 }
 
-.invalidField	{
-	background-color:#ffc1c1;
+body    {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
 }
 
-.loanBarInput .loanName	{
-	position: absolute;
-	left: 0px;
-	width: 225px;
-}
-.loanBarInput .currentBalance	{
-	position: absolute;
-	left: 225px;
-	width: 175px;
-}
-.loanBarInput .minMonthlyPayment	{
-	position: absolute;
-	left: 405px;
-	width: 175px;
-}
-.loanBarInput .interest	{
-	position: absolute;
-	left: 580px;
-	width: 115px;
+a   {
+    color: var(--accent);
 }
 
-.loanBarInput .loanName input	{
-	width: 215px;
+a:hover {
+    color: var(--accent-hover);
 }
 
-.loanBarInput .currentBalance input	{
-	width: 150px;
-	left: 5px;
+button, input   {
+    font: inherit;
+    color: inherit;
 }
 
-.loanBarInput .minMonthlyPayment input	{
-	width: 140px;
-	left: 5px;
+:focus-visible  {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
 }
 
-.loanBarInput .interest	input	{
-	width: 80px;
-	left: 5px;
+.page   {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 32px 20px 40px;
 }
-
-#loanBarInputContainer	{
-	width: 800px;
-}
-
 
 /*
- * Calculate
+ * Header
  */
 
-a.calculate	{
-	font-weight:bold;
-	font-size:25px;
-	color:#23d8f6;
-	letter-spacing: -0.1em;
-	margin: 0 auto;
-	text-shadow: 1px 1px 1px #93f0ff;
-	text-decoration: none;
-	cursor: pointer;
-    position: relative;
-    left: 350px;
-}	
-
-/*
- * Result Bar
- */
-
-#allResultsContainer	{
-	width: 800px;
-	text-align: left;
+.siteHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
 }
 
-.resultBarLink	{
-	text-decoration: none;
+.brand h1   {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    line-height: 1.1;
 }
 
-.resultBar	{
-	position: relative;
-	left: 48px;
-	width: 723px;
-	height: 72px;
-	background-image: url('../img/greenTab.png');
-	background-repeat: no-repeat;
-	cursor: pointer;
-	
+.brand h1 span  {
+    color: var(--accent);
 }
 
-.resultBar .loanName, .resultBar .payoffDate, .resultBar .totalInterest,
-.resultBar .payoffDateText, .resultBar .totalInterestText	{
-	color: #fff;
-	text-decoration: none;
-	font-weight:bold;
-}
-
-.resultBar .loanName	{
-	position: absolute;
-	left: 20px;
-	top: 7px;
-	width: 450px;
-	font-size:40px;
-}
-
-.resultBar .payoffDate, .resultBar .payoffDateText,
-.resultBar .totalInterest, .resultBar .totalInterestText	{
-	position: absolute;
-}
-
-.resultBar .payoffDate	{
-	top: 24px;
-	font-size:22px;
-	left: 400px;
-}
-
-.resultBar .payoffDateText	{
-	top: 5px;
-	font-size:16px;
-	left: 400px;
-}
-
-.resultBar .totalInterest	{
-	top: 24px;
-	font-size:22px;
-	left: 530px;
-}
-.resultBar .totalInterestText	{
-	top: 5px;
-	left: 530px;
-	font-size:16px;
-}
-
-.resultBar .resultBarDetailsClick	{
-	position: absolute;
-	left: 22px;
-	top: 54px;
-	font-size:13px;
-	color: #d6ffe0;
-}
-
-/*
- * Monthly Results
- */
-
-.monthlyResults	{
-	position: relative;
-	left: 48px;
-	width:704px;
-	background-color:#eeeeee;
-	cursor: pointer;
-	text-align: right;
-}
-.monthlyResults	td{
-	text-align: right;
-}
-
-.monthlyResults	td.month	{
-	width:100px;
-}
-.monthlyResults	td.principle	{
-	width:130px;
-}
-.monthlyResults	td.totalInterest	{
-	width:100px;
-}
-.monthlyResults	td.monthlyPayment	{
-	width:100px;
-}
-.monthlyResults	td.princPaid	{
-	width:100px;
-}
-.monthlyResults	td.interestPaid	{
-	width:100px;
-}
-
-tr.alternateRows0	{
-	/*background-color:#;*/
-}
-tr.alternateRows1	{
-	background-color:#dddddd;
-}
-
-.tHead	{
-	font-weight:bold;
-}
-
-/*
- * Total Results
- */
-
-#totalResults	{
-	width: 800px;
-	text-align: left;
-	display: none;
-}
-
-#totalResultsBar	{
-	position: relative;
-	left: 48px;
-	width: 723px;
-	height: 74px;
-	background-image: url('../img/lightGreenTab.png');
-	background-repeat: no-repeat;
-}
-
-#totalResultsBar .name, #totalResultsBar .payoffDate, #totalResultsBar .totalInterest,
-#totalResultsBar .payoffDateText, #totalResultsBar .totalInterestText	{
-	color: #fff;
-	font-weight:bold;
-}
-
-#totalResultsBar .name	{
-	position: absolute;
-	text-align: left;
-	left: 20px;
-	top: 7px;
-	width: 450px;
-	font-size:40px;
-}
-
-#totalResultsBar .payoffDate, #totalResultsBar .payoffDateText,
-#totalResultsBar .totalInterest, #totalResultsBar .totalInterestText	{
-	position: absolute;
-}
-
-#totalResultsBar .payoffDate	{
-	top: 24px;
-	font-size:22px;
-	left: 400px;
-}
-
-#totalResultsBar .payoffDateText	{
-	top: 5px;
-	font-size:16px;
-	left: 400px;
-}
-
-#totalResultsBar .totalInterest	{
-	top: 24px;
-	font-size:22px;
-	left: 530px;
-}
-#totalResultsBar .totalInterestText	{
-	top: 5px;
-	left: 530px;
-	font-size:16px;
-}
-
-
-/*
- * Info/Tooltips
- */ 
-
-#error  {
-    background-color: #e35a5a;
-    position: fixed;
-    display: block;
-    text-align: center;
-    border: 1px #aaaaaa solid;
-    top: 0px;
-    z-index: 10;
-    width: 800px;
-    height: 50px;
-}
-
-#error p    {
-    margin: 0px 5px 5px 0px;
-    color: #fff;
-}
-
-#info, #footerInfo	{
-	float: right;
-	left: 600px;
-	font-size: 11px;
-	color: #19d7f5;
+.brand p    {
+    margin: 4px 0 0;
+    color: var(--muted);
 }
 
 #info   {
-    top: 5px;
-    margin: 5px;
+    display: flex;
+    gap: 4px;
 }
 
-#footerInfo {
-    margin: 75px 5px 5px 5px;
+.link   {
+    padding: 6px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
 }
 
-#info a, .link, .linkClose, .moreInfo a, .helpContent a, #footerInfo a	{
-	text-decoration: underline;
-	color: #19d7f5;
-	cursor: pointer;
+.link:hover {
+    background: var(--surface-2);
+    color: var(--text);
 }
 
-#moreInfo	{
-	position: relative;
-	left: 0px;
-	top: 0px;
-    z-index: 5;
+.moreInfo   {
+    display: none;
+    font-size: 14px;
 }
 
-
-.moreInfo a  {
-    color: #fff;
+.moreInfo p:first-child {
+    margin-top: 0;
 }
 
-.moreInfo	{
-    text-align: left;
-	position: absolute;
-	display: none;
-	z-index: 5;
-	top: 0px;
-	left: 600px;
-	width: 250px;
-	border: 2px solid #fff;
-	-webkit-box-shadow:0px 0px 5px  #ccc;
-	-moz-box-shadow:0px 0px 5px #ccc;
-	box-shadow:0px 0px 5px #ccc;
-	font-size: 11px;
-	background-color: #23d8f6;
-	color: #fff;
+.moreInfo p:last-child  {
+    margin-bottom: 0;
 }
-
-.moreInfo p {
-    margin: 10px;
-}
-
-#helpPopup	{
-	position: absolute;
-	top:0px;
-	left:0px;
-    z-index: 5;
-}
-
-.helpContent a  {
-    color: #23d8f6;
-}
-
-.helpContent	{
-    text-align: left;
-	position: absolute;
-	display: none;
-	z-index: 10;
-	width: 200px;
-	border: 2px solid #fff;
-	-webkit-box-shadow:0px 0px 5px  #ccc;
-	-moz-box-shadow:0px 0px 5px #ccc;
-	box-shadow:0px 0px 5px #ccc;
-	font-size: 11px;
-	background-color: #23d8f6;
-	color: #fff;
-}
-
-.helpContent p  {
-    margin: 5px;
-}
-
-.smallHelpContent	{
-	position: absolute;
-	display: none;
-	z-index: 10;
-	width: 40px;
-	height: 10px;
-	border: 2px solid #fff;
-	-webkit-box-shadow:0px 0px 5px  #ccc;
-	-moz-box-shadow:0px 0px 5px #ccc;
-	box-shadow:0px 0px 5px #ccc;
-	font-size: 11px;
-	background-color: #93f0ff;
-	color: #fff;
-}
-
 
 /*
- * Graph
+ * Cards and shared controls
  */
 
-
-#graph, #graphTitle, #graphViewOptions	{
-	display: none;
+.card   {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    margin-bottom: 16px;
 }
 
-#graph	{
-	position: relative;
-	width: 600px;
-	min-height: 340px;
-	margin: 0 auto;
+.cardHeader {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
 }
 
-#graph .u-legend	{
-	margin-bottom: 6px;
-	font-size: 12px;
-	color: #545454;
+.cardTitle  {
+    margin: 0 0 4px;
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
 }
 
-#graph .u-legend .u-series th	{
-	font-weight: normal;
+.cardHeader .cardTitle  {
+    margin: 0;
 }
 
-#graphTitle	{
-	font-size: 16px;
-	color: #19d7f5;
-	font-weight:bold;
-	margin: 20px auto;
+.fieldTitle {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.hint   {
+    margin: 8px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.affix  {
+    display: flex;
+    align-items: center;
+    height: 42px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    transition: border-color 120ms, box-shadow 120ms;
+}
+
+.affix span {
+    padding: 0 0 0 12px;
+    color: var(--muted);
+}
+
+.affix span:last-child  {
+    padding: 0 12px 0 0;
+}
+
+.affix input, .field > input    {
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    padding: 0 12px 0 6px;
+    border: 0;
+    background: transparent;
+    font-variant-numeric: tabular-nums;
+}
+
+.affix input:focus, .field > input:focus    {
+    outline: none;
+}
+
+.affix:focus-within, .field > input:focus  {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.affixLarge {
+    height: 52px;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.affixLarge span    {
+    padding-left: 14px;
+}
+
+.field > input  {
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+}
+
+.affix:has(.invalidField), .field > input.invalidField  {
+    border-color: var(--danger);
+    background: var(--danger-soft);
+}
+
+input::placeholder  {
+    color: var(--muted);
+    opacity: 0.7;
+}
+
+.segmented  {
+    display: flex;
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+}
+
+.segmented button   {
+    flex: 1;
+    padding: 8px 14px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--muted);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 120ms, color 120ms;
+}
+
+.segmented button:hover {
+    color: var(--text);
+}
+
+.segmented button[aria-pressed='true'] {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow);
+}
+
+.segmentedSmall button  {
+    padding: 5px 12px;
+    font-size: 13px;
+}
+
+.btn    {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 18px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 120ms, border-color 120ms, color 120ms;
+}
+
+.btn svg    {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+
+.btnPrimary {
+    display: flex;
+    width: 100%;
+    margin-bottom: 24px;
+    padding: 14px 18px;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-size: 16px;
+}
+
+.btnPrimary:hover   {
+    background: var(--accent-hover);
+}
+
+.btnGhost   {
+    width: 100%;
+    margin-top: 12px;
+    border: 1px dashed var(--border-strong);
+    background: transparent;
+    color: var(--accent);
+}
+
+.btnGhost:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+}
+
+/*
+ * Payment settings
+ */
+
+#controlBar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+}
+
+#paymentSlider  {
+    display: block;
+    width: 100%;
+    margin: 16px 0 0;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+/*
+ * Loans
+ */
+
+.loanBarInput + .loanBarInput   {
+    border-top: 1px solid var(--border);
+}
+
+.loanRow    {
+    display: grid;
+    grid-template-columns: 1fr 36px;
+    align-items: end;
+    gap: 8px;
+    padding: 16px 0;
+}
+
+.loanFields {
+    display: grid;
+    grid-template-columns: 1.5fr 1.1fr 1fr 0.9fr;
+    gap: 12px;
+}
+
+.field label    {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.destroyLoan    {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 42px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+}
+
+.destroyLoan:hover  {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.destroyLoan svg    {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+
+/*
+ * Results
+ */
+
+#results    {
+    display: none;
+}
+
+#totalResultsBar    {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.stat   {
+    display: flex;
+    flex-direction: column;
+    padding: 18px 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+}
+
+.statLabel  {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.stat strong    {
+    margin-top: 2px;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+.statSub    {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.statHero   {
+    border-color: transparent;
+    background: var(--accent);
+    color: var(--on-accent);
+}
+
+.statHero .statLabel, .statHero .statSub    {
+    color: inherit;
+    opacity: 0.85;
+}
+
+#graph  {
+    width: 100%;
+    min-height: 330px;
+}
+
+#graph .u-legend    {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+#graph .u-legend th {
+    font-weight: 500;
+}
+
+#graph .u-legend .u-marker  {
+    border-radius: 50%;
+}
+
+.resultsContainer   {
+    border-top: 1px solid var(--border);
+}
+
+.resultsContainer:first-child   {
+    margin-top: 12px;
+}
+
+.resultBar  {
+    display: grid;
+    grid-template-columns: 12px 1fr 120px 120px 16px;
+    align-items: center;
+    gap: 14px;
+    margin: 0 -10px;
+    padding: 14px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+.resultBar:hover    {
+    background: var(--surface-2);
+}
+
+.seriesDot  {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.resultName {
+    min-width: 0;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.resultOrder    {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.resultStat {
+    display: flex;
+    flex-direction: column;
+    font-variant-numeric: tabular-nums;
+}
+
+.resultStat span    {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.resultStat strong  {
+    font-weight: 600;
+}
+
+.chevron    {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: var(--muted);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 150ms;
+}
+
+.resultBar[aria-expanded='true'] .chevron   {
+    transform: rotate(180deg);
+}
+
+.monthlyResults {
+    max-height: 360px;
+    margin-bottom: 14px;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+
+.monthlyResults table   {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.monthlyResults th, .monthlyResults td  {
+    padding: 8px 12px;
+    text-align: right;
+}
+
+.monthlyResults th:first-child, .monthlyResults td:first-child  {
+    text-align: left;
+}
+
+.monthlyResults th  {
+    position: sticky;
+    top: 0;
+    background: var(--surface-2);
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.monthlyResults tr:nth-child(even) td   {
+    background: var(--surface-2);
+}
+
+/*
+ * Error message
+ */
+
+#error  {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    z-index: 50;
+    width: calc(100% - 32px);
+    max-width: 480px;
+    padding: 14px 18px;
+    border: 1px solid var(--danger);
+    border-radius: var(--radius-sm);
+    background: var(--danger-soft);
+    box-shadow: var(--shadow-lg);
+    transform: translateX(-50%);
+}
+
+#error p    {
+    margin: 0;
+}
+
+/*
+ * Footer
+ */
+
+#footer {
+    margin-top: 32px;
+    color: var(--muted);
+    font-size: 13px;
     text-align: center;
 }
 
-#graphViewOptions	{
-	margin: 10px auto;
-	font-size: 11px;
-	color: #19d7f5;
-    text-align: center;
+#footer a   {
+    color: inherit;
 }
 
-.graphView	{
-	cursor: pointer;
-	text-decoration: underline;
+/*
+ * Small screens
+ */
+
+@media (max-width: 640px)   {
+    .page   {
+        padding: 20px 16px 32px;
+    }
+
+    .siteHeader {
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+    }
+
+    .brand h1   {
+        font-size: 26px;
+    }
+
+    #info   {
+        margin-left: -12px;
+    }
+
+    .card   {
+        padding: 18px;
+    }
+
+    #controlBar {
+        grid-template-columns: 1fr;
+        gap: 22px;
+    }
+
+    .loanFields {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .fieldName  {
+        grid-column: 1 / -1;
+    }
+
+    .loanRow    {
+        align-items: start;
+    }
+
+    .destroyLoan    {
+        margin-top: 22px;
+    }
+
+    #totalResultsBar    {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .statHero   {
+        grid-column: 1 / -1;
+    }
+
+    .stat strong    {
+        font-size: 22px;
+    }
+
+    .resultBar  {
+        grid-template-columns: 12px 1fr 1fr 16px;
+        row-gap: 6px;
+    }
+
+    .resultName {
+        grid-column: 2 / 4;
+    }
+
+    .resultBar .chevron {
+        grid-column: 4;
+        grid-row: 1;
+    }
+
+    .resultPaidOff  {
+        grid-column: 2;
+    }
+
+    .resultInterest {
+        grid-column: 3;
+    }
 }

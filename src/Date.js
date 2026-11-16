@@ -96,7 +96,7 @@ Unburyme.Date.prototype.increment = function()  {
  */
 Unburyme.Date.prototype.print = function()  {
 
-    var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"];
+    var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     return months[this.month] + " " + this.year;    
 
 }

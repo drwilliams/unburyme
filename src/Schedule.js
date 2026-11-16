@@ -28,6 +28,19 @@ Unburyme.roundCents = function(v)   {
 
 
 /**
+ * @param {number} v
+ * @param {boolean=} noCents Round to whole dollars
+ * @return {string} e.g. "$1,234.56"
+ */
+Unburyme.formatMoney = function(v, noCents)   {
+
+    var digits = noCents ? 0 : 2;
+    return '$' + Number(v).toLocaleString('en-US', {minimumFractionDigits: digits, maximumFractionDigits: digits});
+
+};
+
+
+/**
  * Unburyme.escapeHtml
  * @param {string} s
  * @return {string} s, safe to insert as HTML

@@ -24,15 +24,28 @@ document.addEventListener('DOMContentLoaded', function()    {
 
     // Creating/destroying Loans, Payment Type
 
-    Dom.on(document, 'click', '.paymentTypeButtonLink', function(e, link)   {
+    var strategyHints = {
+        'avalanche': 'Highest interest rate first. Saves the most money.',
+        'snowball': 'Smallest balance first. Clears individual loans sooner.'
+    };
 
-        var type = link.classList.contains('avaLink') ? 'avalanche' : 'snowball',
-            other = type == 'avalanche' ? 'snowball' : 'avalanche';
+    var setPaymentType = function(type) {
+
+        var other = type == 'avalanche' ? 'snowball' : 'avalanche';
         byId(type).classList.remove('unselectedPaymentType');
         byId(type).classList.add('selectedPaymentType');
+        byId(type).setAttribute('aria-pressed', 'true');
         byId(other).classList.remove('selectedPaymentType');
         byId(other).classList.add('unselectedPaymentType');
+        byId(other).setAttribute('aria-pressed', 'false');
+        byId('strategyHint').textContent = strategyHints[type];
         loanApp.paymentType = type;
+    };
+    setPaymentType(loanApp.paymentType);
+
+    Dom.on(document, 'click', '.paymentTypeButtonLink', function(e, button)   {
+
+        setPaymentType(button.classList.contains('avaLink') ? 'avalanche' : 'snowball');
         calculate();
     });
 
@@ -74,9 +87,17 @@ document.addEventListener('DOMContentLoaded', function()    {
 
     // Viewing Results
 
-    Dom.on(document, 'click', '.resultsContainer', function(e, container)  {
+    Dom.on(document, 'click', '.resultBar', function(e, bar)  {
 
-        loanApp.getLoan(container.id.substr(16)).results.click();
+        loanApp.getLoan(bar.id.substr(9)).results.click();
+    });
+
+    Dom.on(document, 'keydown', '.resultBar', function(e, bar)  {
+
+        if(e.key == 'Enter' || e.key == ' ')    {
+            e.preventDefault();
+            loanApp.getLoan(bar.id.substr(9)).results.click();
+        }
     });
 
     Dom.on(document, 'click', '.graphView', function(e, link)  {
@@ -132,15 +153,10 @@ document.addEventListener('DOMContentLoaded', function()    {
 
         if(field != 'name')
             return;
-        var input = byId('loan' + field + uid);
-        if(value == '')   {
-            value = 'Loan ' + (parseInt(uid, 10) + 1);
-            input.value = value;
-            input.style.color = '#cccccc';
-        }
-        else
-            input.style.color = '#444444';
-        loanApp.updateLoan(uid, field, value);
+        // An empty name falls back to the placeholder, e.g. "Loan 2"
+        if(value.trim() == '')
+            value = byId('loan' + field + uid).placeholder;
+        loanApp.updateLoan(uid, field, value.trim());
     };
 
 
@@ -157,37 +173,19 @@ document.addEventListener('DOMContentLoaded', function()    {
     Dom.on(document, 'click', '.link', function(e, link)    {
 
         var panels = document.querySelectorAll('.moreInfo');
-        for(var i=0;i<panels.length;i++)
-            panels[i].style.display = 'link_' + panels[i].id == link.id ? 'block' : 'none';
+        for(var i=0;i<panels.length;i++)    {
+            var open = 'link_' + panels[i].id == link.id && !Dom.isShown(panels[i]);
+            panels[i].style.display = open ? 'block' : 'none';
+        }
     });
 
     document.body.addEventListener('click', function(e)    {
 
-        if(e.target.classList.contains('link'))
+        if(e.target.closest('.link, .moreInfo'))
             return;
         var panels = document.querySelectorAll('.moreInfo');
         for(var i=0;i<panels.length;i++)
             panels[i].style.display = 'none';
-    });
-
-    var helpContent = {
-        'totalMonthlyPaymentHelp': 'help_tmp',
-        'paymentTypeHelp': 'help_pt'
-    };
-
-    Dom.on(document, 'mouseover', '.help', function(e, help)  {
-
-        var popup = byId('helpPopup');
-        popup.style.left = (e.pageX + 30) + 'px';
-        popup.style.top = (e.pageY - 20) + 'px';
-        if(helpContent[help.id])
-            byId(helpContent[help.id]).style.display = 'block';
-    });
-
-    Dom.on(document, 'mouseout', '.help', function(e, help)  {
-
-        if(helpContent[help.id])
-            byId(helpContent[help.id]).style.display = 'none';
     });
 
 });

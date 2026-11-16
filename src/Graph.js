@@ -13,21 +13,68 @@ Unburyme.Graph = function(loanApp)  {
     this.chartKey = '';
     this.yearTicks = [];
 
+    // Follow the container's width, and redraw in the new colours when the theme changes
+    var self = this,
+        resizeTimeout = null;
+    window.addEventListener('resize', function()    {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(function()   {
+            if(self.chart)
+                self.chart.setSize({width: self.getWidth(), height: Unburyme.Graph.HEIGHT});
+        }, 100);
+    });
+    if(window.matchMedia)   {
+        var scheme = window.matchMedia('(prefers-color-scheme: dark)'),
+            onSchemeChange = function()    {
+                if(self.chart)  {
+                    self.chartKey = '';
+                    self.draw();
+                }
+            };
+        if(scheme.addEventListener)
+            scheme.addEventListener('change', onSchemeChange);
+    }
+
 };
 
 
 Unburyme.Graph.TITLES = {
-    'princRemaining': 'Principle Remaining',
-    'princPaid': 'Principle Paid',
-    'totalInterestPaid': 'Total Interest Paid',
-    'monthlyPayment': 'Monthly Payment'
+    'princRemaining': 'Balance remaining',
+    'princPaid': 'Principal paid each month',
+    'totalInterestPaid': 'Interest paid so far',
+    'monthlyPayment': 'Monthly payment'
 };
 
-Unburyme.Graph.WIDTH = 600;
 Unburyme.Graph.HEIGHT = 300;
-Unburyme.Graph.AXIS_FONT = '11px "Droid Sans", arial, sans-serif';
-Unburyme.Graph.AXIS_COLOR = '#545454';
-Unburyme.Graph.GRID = {stroke: 'rgba(0, 0, 0, 0.08)', width: 1};
+Unburyme.Graph.AXIS_FONT = '12px Inter, system-ui, sans-serif';
+
+
+/**
+ * @return {number} Width available for the chart
+ */
+Unburyme.Graph.prototype.getWidth = function()  {
+
+    return Math.max(Unburyme.Dom.byId('graph').clientWidth, 260);
+
+};
+
+
+/**
+ * Reads axis and grid colours from the page's CSS custom properties
+ * @return {{text: string, grid: string}}
+ */
+Unburyme.Graph.prototype.getTheme = function()  {
+
+    var style = getComputedStyle(document.documentElement),
+        read = function(name, fallback) {
+            return (style.getPropertyValue(name) || '').trim() || fallback;
+        };
+    return {
+        text: read('--muted', '#5a6a74'),
+        grid: read('--border', '#dfe5e9')
+    };
+
+};
 
 
 /**
@@ -40,9 +87,6 @@ Unburyme.Graph.prototype.draw = function(field) {
         field = this.lastFieldGraphed;
     this.lastFieldGraphed = field;
 
-    var fadeSpeed = this.loanApp.config.fadeSpeed;
-    Unburyme.Dom.fadeIn(Unburyme.Dom.byId('graph'), fadeSpeed);
-    Unburyme.Dom.fadeIn(Unburyme.Dom.byId('graphViewOptions'), fadeSpeed);
     this.drawTitle(field);
 
     if(typeof uPlot == 'undefined')
@@ -93,6 +137,9 @@ Unburyme.Graph.prototype.makeOptions = function(names)  {
 
     var self = this,
         G = Unburyme.Graph,
+        theme = this.getTheme(),
+        grid = {stroke: theme.grid, width: 1},
+        noTicks = {show: false},
         series = [{
             label: 'Month',
             value: function(u, v)   {
@@ -104,16 +151,16 @@ Unburyme.Graph.prototype.makeOptions = function(names)  {
         series.push({
             label: names[i],
             stroke: this.colorSet[i % this.colorSet.length],
-            width: 2,
+            width: 2.5,
             points: {show: false},
             value: function(u, v)   {
-                return v == null ? '' : '$' + v.toFixed(2);
+                return v == null ? '' : Unburyme.formatMoney(v);
             }
         });
     }
 
     return {
-        width: G.WIDTH,
+        width: this.getWidth(),
         height: G.HEIGHT,
         series: series,
         cursor: {y: false, points: {size: 7}, drag: {x: false, y: false}},
@@ -133,9 +180,9 @@ Unburyme.Graph.prototype.makeOptions = function(names)  {
         axes: [
             {
                 font: G.AXIS_FONT,
-                stroke: G.AXIS_COLOR,
-                grid: G.GRID,
-                ticks: G.GRID,
+                stroke: theme.text,
+                grid: {show: false},
+                ticks: {stroke: theme.grid, width: 1, size: 6},
                 splits: function()  {
                     return self.yearTicks;
                 },
@@ -145,38 +192,16 @@ Unburyme.Graph.prototype.makeOptions = function(names)  {
             },
             {
                 font: G.AXIS_FONT,
-                stroke: G.AXIS_COLOR,
-                grid: G.GRID,
-                ticks: G.GRID,
-                size: 60,
+                stroke: theme.text,
+                grid: grid,
+                ticks: noTicks,
+                gap: 8,
+                size: 56,
                 values: function(u, splits) {
                     return splits.map(Unburyme.Graph.dollarFormatter);
                 }
             }
-        ],
-        hooks: {
-            // White-to-blue gradient behind the plot, and a dark outline around it
-            drawClear: [function(u)    {
-                var b = u.bbox,
-                    ctx = u.ctx,
-                    gradient = ctx.createLinearGradient(0, b.top, 0, b.top + b.height);
-                gradient.addColorStop(0, '#ffffff');
-                gradient.addColorStop(1, '#b0edf7');
-                ctx.save();
-                ctx.fillStyle = gradient;
-                ctx.fillRect(b.left, b.top, b.width, b.height);
-                ctx.restore();
-            }],
-            draw: [function(u)    {
-                var b = u.bbox,
-                    ctx = u.ctx;
-                ctx.save();
-                ctx.strokeStyle = G.AXIS_COLOR;
-                ctx.lineWidth = 2 * uPlot.pxRatio;
-                ctx.strokeRect(b.left, b.top, b.width, b.height);
-                ctx.restore();
-            }]
-        }
+        ]
     };
 
 };
@@ -232,7 +257,6 @@ Unburyme.Graph.prototype.drawTitle = function(field)    {
 
     var title = Unburyme.Dom.byId('graphTitle');
     title.textContent = Unburyme.Graph.TITLES[field] || '';
-    Unburyme.Dom.fadeIn(title, this.loanApp.config.fadeSpeed);
 
     var links = document.querySelectorAll('.graphView');
     for(var i=0;i<links.length;i++)
@@ -242,26 +266,27 @@ Unburyme.Graph.prototype.drawTitle = function(field)    {
 
 
 /**
- * Format the value with a $ sign
+ * Format an axis value compactly, e.g. "$12.5k"
  * @param {number} v Value to be formatted
  * @return {string} Formatted value
  */
 Unburyme.Graph.dollarFormatter = function(v)  {
 
-    return '$' + v;
+    var abs = Math.abs(v);
+    if(abs >= 1e6)
+        return '$' + Number((v / 1e6).toFixed(1)) + 'M';
+    if(abs >= 1e3)
+        return '$' + Number((v / 1e3).toFixed(1)) + 'k';
+    return '$' + Number(v.toFixed(2));
 
 };
 
 
 /**
- * Hides the graph and clears stored graph info
+ * Removes the chart
  */
 Unburyme.Graph.prototype.reset = function() {
 
-    var fadeSpeed = this.loanApp.config.fadeSpeed;
-    Unburyme.Dom.fadeOut(Unburyme.Dom.byId('graph'), fadeSpeed);
-    Unburyme.Dom.fadeOut(Unburyme.Dom.byId('graphViewOptions'), fadeSpeed);
-    Unburyme.Dom.fadeOut(Unburyme.Dom.byId('graphTitle'), fadeSpeed);
     if(this.chart)  {
         this.chart.destroy();
         this.chart = null;
