@@ -1,292 +1,189 @@
-$(function()    {
+document.addEventListener('DOMContentLoaded', function()    {
+
+    var Dom = Unburyme.Dom,
+        byId = Dom.byId;
 
     // Setup
     var loanApp = new Unburyme.LoanApp();
     loanApp.createLoan();
 
-    var emailLink = '<a href=\'mailto:jsantell@gmail.com\' title=\'email Jordan Santell\'>jsantell@gmail.com</a>';
-    $('#email').html(emailLink);
-    
+    var markUninitializedInvalid = function()   {
+        var inputs = document.querySelectorAll('input.uninitialized');
+        for(var i=0;i<inputs.length;i++)
+            inputs[i].classList.add('invalidField');
+    };
+
+    var calculate = function(firstCall) {
+
+        if(firstCall || loanApp.autoCalc)
+            loanApp.calculatePrep();
+    };
+
 
     // Creating/destroying Loans, Payment Type
-    
-    $(".paymentTypeButtonLink").click(function ()   {
 
-        if($(this).is('.avaLink'))  {
-            $('#avalanche').removeClass('unselectedPaymentType').addClass('selectedPaymentType');
-            $('#snowball').removeClass('selectedPaymentType').addClass('unselectedPaymentType');
-            loanApp.paymentType = 'avalanche';
-        }
-        else    {
-            $('#snowball').removeClass('unselectedPaymentType').addClass('selectedPaymentType');
-            $('#avalanche').removeClass('selectedPaymentType').addClass('unselectedPaymentType');
-            loanApp.paymentType = 'snowball';
-        }
+    var strategyHints = {
+        'avalanche': 'Highest interest rate first. Saves the most money.',
+        'snowball': 'Smallest balance first. Clears individual loans sooner.'
+    };
+
+    var setPaymentType = function(type) {
+
+        var other = type == 'avalanche' ? 'snowball' : 'avalanche';
+        byId(type).classList.remove('unselectedPaymentType');
+        byId(type).classList.add('selectedPaymentType');
+        byId(type).setAttribute('aria-pressed', 'true');
+        byId(other).classList.remove('selectedPaymentType');
+        byId(other).classList.add('unselectedPaymentType');
+        byId(other).setAttribute('aria-pressed', 'false');
+        byId('strategyHint').textContent = strategyHints[type];
+        loanApp.paymentType = type;
+    };
+    setPaymentType(loanApp.paymentType);
+
+    Dom.on(document, 'click', '.paymentTypeButtonLink', function(e, button)   {
+
+        setPaymentType(button.classList.contains('avaLink') ? 'avalanche' : 'snowball');
         calculate();
-        
     });
 
-
-    $('.createLoanPlus').live('click', function ()  {
+    Dom.on(document, 'click', '.createLoanPlus', function()   {
 
         loanApp.createLoan();
     });
 
-    
-    $('.destroyLoan').live('click', function () {
+    Dom.on(document, 'click', '.destroyLoan', function(e, link) {
 
-        var deleteID = $(this).attr('id').substr(6);
-        loanApp.destroyLoan(deleteID);
+        e.preventDefault();
+        loanApp.destroyLoan(link.id.substr(6));
         calculate();
     });
 
-    
+
     // Slider
-    $('#paymentSlider').slider({
 
-        value: 100,
-        min: 0,
-        max: 5000,
-        animate: true,
-        slide: function(event,ui)   {
-            $('#totalMonthlyPayment').val(logPositionToPayment(ui.value));
-            loanApp.updatePayment(logPositionToPayment(ui.value));
-            sliderCalculate(logPositionToPayment(ui.value));
-        }
-    });
+    var slider = byId('paymentSlider'),
+        sliderTimeout = null;
 
+    slider.addEventListener('input', function()    {
 
-    var timeout = null;
-    var sliderCalculate = function(position)    {
-        if(timeout)
-            clearTimeout(timeout);
-        timeout = setTimeout(function () {
-            if(loanApp.autoCalc)            
-                $('input.uninitialized').addClass('invalidField');
-            if(logPositionToPayment(position) < loanApp.totalMinPayment)
-                $('#paymentSlider').slider('option','value',logPaymentToPosition(loanApp.totalMinPayment));
+        var payment = Number(slider.value);
+        byId('totalMonthlyPayment').value = payment;
+        loanApp.updatePayment(payment);
+
+        if(sliderTimeout)
+            clearTimeout(sliderTimeout);
+        sliderTimeout = setTimeout(function()   {
+            if(loanApp.autoCalc)
+                markUninitializedInvalid();
+            if(payment < loanApp.totalMinPayment)
+                slider.value = loanApp.totalMinPayment;
             calculate();
         }, loanApp.config.sliderWaitToCalculate);
-    };
-
-    
-    // TODO 
-    // Not a fan of log curve, needs tweeked; linear for now
-    logPaymentToPosition = function(payment)    {
-        
-        //return (payment.log2() / loanApp.config.sliderMax.log2()) * 1000;
-        return payment;
-    };  
-
-
-    // TODO
-    // Again, linear for now
-    logPositionToPayment = function(pos)    {
-        
-        /*
-        var payment = (pos / 1000) * loanApp.config.sliderMax.log2();
-        payment = Math.pow(2,payment);
-        payment = Math.round(payment*100)/100;
-        return payment;
-        */
-        return pos;
-    };  
+    });
 
 
     // Viewing Results
-    $('.resultsContainer').live('click', function ()    {
-        var uid = $(this).attr('id').substr(16);
-        loanApp.getLoan(uid).results.click();
+
+    Dom.on(document, 'click', '.resultBar', function(e, bar)  {
+
+        loanApp.getLoan(bar.id.substr(9)).results.click();
     });
 
-    $('.graphView').click(function ()   {
-        if($(this).attr('id')=='graph_princRemaining')  {
-            loanApp.graph.draw('princRemaining');       
+    Dom.on(document, 'keydown', '.resultBar', function(e, bar)  {
+
+        if(e.key == 'Enter' || e.key == ' ')    {
+            e.preventDefault();
+            loanApp.getLoan(bar.id.substr(9)).results.click();
         }
-        else if($(this).attr('id')=='graph_princPaid')  {
-            loanApp.graph.draw('princPaid');        
-        }
-        else if($(this).attr('id')=='graph_totalInterestPaid')  {
-            loanApp.graph.draw('totalInterestPaid');        
-        }
-        else if($(this).attr('id')=='graph_monthlyPayment') {
-            loanApp.graph.draw('monthlyPayment');       
-        }
+    });
+
+    Dom.on(document, 'click', '.graphView', function(e, link)  {
+
+        loanApp.graph.draw(link.id.substr(6));
     });
 
 
     // Events
-    $('#totalMonthlyPayment').live('change', function() {
 
-        var value = $(this).val();
+    byId('totalMonthlyPayment').addEventListener('change', function()  {
+
+        var value = this.value;
         if(loanApp.validatePayment(value))   {
+            value = Unburyme.parseAmount(value);
             loanApp.updatePayment(value);
-            $('#paymentSlider').slider('option','value',logPaymentToPosition(value));
-            calculate();    
-        }
-    });
-
-    $('#loanBarInputContainer input').live('change', function() {
-
-        var uid;
-        var field;
-        var value = $(this).val();
-
-        // Setting input
-
-        if($(this).hasClass('name'))    {
-            uid = $(this).attr('id').substr(8);
-            field = 'name';
-        }
-        else if($(this).hasClass('balance'))    {
-            uid = $(this).attr('id').substr(11);
-            field = 'balance';
-        }
-        else if($(this).hasClass('minPayment')) {
-            uid = $(this).attr('id').substr(14);
-            field = 'minPayment';
-        }
-        else if($(this).hasClass('interest'))   {
-            uid = $(this).attr('id').substr(12);
-            field = 'interest';
-        }
-        
-
-        // Validate input
-        if(loanApp.getLoan(uid).validate(field,value))  {
-
-            loanApp.updateLoan(uid,field,formatNumber(value));
-            if(field=='minPayment')
-                $('#paymentSlider').slider('option','value',logPaymentToPosition(loanApp.totalPayment));
-        }
-        resetEmptyEntry(uid,field,value);
-        
-        // If it's an initialized loan, attempt to recalculate
-        // and make all uninitialized inputs invalid
-        if(loanApp.getLoan(uid).isInitialized['loan'] && loanApp.autoCalc)  {
-
-            $('input.uninitialized').addClass('invalidField');
+            slider.value = value;
             calculate();
         }
-
     });
 
+    Dom.on(byId('loanBarInputContainer'), 'change', 'input', function(e, input)    {
 
-    var calculate = function(firstCall) {
-        
-        if(firstCall || loanApp.autoCalc)   {
-
-            // If no invalidFields, calculate and set blank fields to default values
-            if($('input').hasClass('invalidField')) {
-                // @TODO Flash red divs?
-            }
-            loanApp.calculatePrep();            
+        var fields = ['name', 'balance', 'minPayment', 'interest'],
+            field = null,
+            value = input.value;
+        for(var i=0;i<fields.length;i++)    {
+            if(input.classList.contains(fields[i]))
+                field = fields[i];
         }
-    };
+        if(!field)
+            return;
+        var uid = input.id.substr(('loan' + field).length),
+            loan = loanApp.getLoan(uid);
 
-
-    
-
-    var resetEmptyEntry = function(uid,field,value) {
-
-        if(field=='name')   {
-            if(value=='')   {
-                value = 'Loan '+(parseInt(uid)+1);
-                $('#loan'+field+uid).val(value);
-                $('#loan'+field+uid).css('color','#cccccc');
-            }
-            else
-                $('#loan'+field+uid).css('color','#444444');
-            loanApp.updateLoan(uid,field,value);
+        // Validate input
+        if(loan.validate(field, value))  {
+            loanApp.updateLoan(uid, field, field == 'name' ? value : Unburyme.parseAmount(value));
+            if(field == 'minPayment')
+                slider.value = loanApp.totalPayment;
         }
-    };
+        resetEmptyEntry(uid, field, value);
 
-    var formatNumber = function(s)  {
-        
-        s = s.replace(' ','');
-        s = s.replace(',','');
-        s = parseFloat(s);
-        return s;
+        // If it's an initialized loan, attempt to recalculate
+        // and make all uninitialized inputs invalid
+        if(loan.isInitialized['loan'] && loanApp.autoCalc)  {
+            markUninitializedInvalid();
+            calculate();
+        }
+    });
+
+    var resetEmptyEntry = function(uid, field, value) {
+
+        if(field != 'name')
+            return;
+        // An empty name falls back to the placeholder, e.g. "Loan 2"
+        if(value.trim() == '')
+            value = byId('loan' + field + uid).placeholder;
+        loanApp.updateLoan(uid, field, value.trim());
     };
 
 
     // Calculate, Links, Tooltip
-    $('.calculate').click(function ()   {
 
-        if($('input').hasClass('uninitialized'))    
-            $('input.uninitialized').addClass('invalidField');  
+    byId('calculate').addEventListener('click', function()   {
+
+        if(document.querySelector('input.uninitialized'))
+            markUninitializedInvalid();
         else
-            calculate(1);
+            calculate(true);
     });
 
-    $('.link').click(function ()    {
+    Dom.on(document, 'click', '.link', function(e, link)    {
 
-        if($(this).attr('id')=='link_help') {
-            $('#help').show();
-            $('#about').hide();
-            $('#feedback').hide();
-        }
-        else if($(this).attr('id')=='link_about')   {
-            $('#help').hide();
-            $('#about').show();
-            $('#feedback').hide();
-        }
-        else if($(this).attr('id')=='link_feedback')    {
-            $('#help').hide();
-            $('#about').hide();
-            $('#feedback').show();
+        var panels = document.querySelectorAll('.moreInfo');
+        for(var i=0;i<panels.length;i++)    {
+            var open = 'link_' + panels[i].id == link.id && !Dom.isShown(panels[i]);
+            panels[i].style.display = open ? 'block' : 'none';
         }
     });
 
-    $('body').click(function (e)    {
+    document.body.addEventListener('click', function(e)    {
 
-        var target = $(e.target);
-        if(!target.hasClass('link'))
-            $('.moreInfo').hide();
-    });
-
-
-    $('.help').mouseover(function (e)   {
-    
-        var x = e.pageX + 30;
-        var y = e.pageY - 20;
-        $('#helpPopup').css({left:x+'px',top:y+'px'});
-        
-        if($(this).attr('id')=='totalMonthlyPaymentHelp')
-            $('#help_tmp').show();
-        else if($(this).attr('id')=='paymentTypeHelp')
-            $('#help_pt').show();
-    });
-
-    $('.help').mouseout(function () {
-        
-        if($(this).attr('id')=='totalMonthlyPaymentHelp')
-            $('#help_tmp').hide();
-        else if($(this).attr('id')=='paymentTypeHelp')
-            $('#help_pt').hide();
+        if(e.target.closest('.link, .moreInfo'))
+            return;
+        var panels = document.querySelectorAll('.moreInfo');
+        for(var i=0;i<panels.length;i++)
+            panels[i].style.display = 'none';
     });
 
 });
-
-
-// From Safalra (Stephen Morley)'s Number-extension.js
-Number.prototype.log2 =
-    
-    function(){
-        return Math.log(this) / Math.LN2;
-};
-
-
-// IE Array.indexOf fix
-if(!Array.indexOf){
-    Array.prototype.indexOf = function(obj){
-        for(var i=0; i<this.length; i++){
-            if(this[i]==obj){
-                return i;
-            }
-        }
-        return -1;
-    }
-};
-
-

@@ -9,6 +9,7 @@ Unburyme.TotalResults = function(loanApp)   {
     this.loanApp = loanApp;
     this.finalPayOffDate = new Unburyme.Date();
     this.totalInterest = 0;
+    this.totalPrincipal = 0;
 
 }
 
@@ -17,8 +18,9 @@ Unburyme.TotalResults.prototype.calculate = function()  {
 
     this.clearData();
     for(var i=0;i<this.loanApp.initLoanCount();i++) {
-        this.finalPayOffDate = this.finalPayOffDate.getLatest(this.loanApp.loanArray[i].results.payOffDate);
-        this.totalInterest += this.loanApp.loanArray[i].results.totalInterestPaid;
+        this.finalPayOffDate = this.finalPayOffDate.getLatest(this.loanApp.initLoanArray[i].results.payOffDate);
+        this.totalInterest += this.loanApp.initLoanArray[i].results.totalInterestPaid;
+        this.totalPrincipal += this.loanApp.initLoanArray[i].getBalance();
     }
     this.draw();
 
@@ -26,21 +28,55 @@ Unburyme.TotalResults.prototype.calculate = function()  {
 
 Unburyme.TotalResults.prototype.draw = function()   {
 
-    var html = '<div id="totalResultsBar">';
-    html += '   <div class="name">Loan Total</div>\n';
-    html += '   <div class="payoffDateText">debt free by</div><div class="payoffDate">'+this.finalPayOffDate.print()+'</div>\n';
-    html += '   <div class="totalInterestText">total interest paid</div><div class="totalInterest">$'+this.totalInterest.toFixed(2)+'</div>\n';
-    html += '</div>\n';
-    $('#totalResultsContainer').fadeIn(this.loanApp.config.fadeSpeed);
-    $('#totalResultsContainer').html(html);
+    var money = Unburyme.formatMoney,
+        html = '<div id=\'totalResultsBar\'>' +
+            '<div class=\'stat statHero\'><span class=\'statLabel\'>Debt free by</span>' +
+                '<strong class=\'payoffDate\'>' + this.finalPayOffDate.print() + '</strong>' +
+                '<span class=\'statSub\'>' + Unburyme.TotalResults.describeDuration(this.monthsToPayOff()) + '</span></div>' +
+            '<div class=\'stat\'><span class=\'statLabel\'>Total interest</span>' +
+                '<strong class=\'totalInterest\'>' + money(this.totalInterest) + '</strong></div>' +
+            '<div class=\'stat\'><span class=\'statLabel\'>Total paid</span>' +
+                '<strong>' + money(this.totalPrincipal + this.totalInterest, true) + '</strong></div>' +
+        '</div>';
+    Unburyme.Dom.byId('totalResultsContainer').innerHTML = html;
 
 };
-    
+
+
+/**
+ * @return {number} Number of monthly payments until the last loan is paid off
+ */
+Unburyme.TotalResults.prototype.monthsToPayOff = function()    {
+
+    var now = new Unburyme.Date();
+    return (this.finalPayOffDate.getYear() - now.getYear()) * 12 + this.finalPayOffDate.getMonth() - now.getMonth() + 1;
+
+};
+
+
+/**
+ * @param {number} months
+ * @return {string} e.g. "in 2 years, 3 months"
+ */
+Unburyme.TotalResults.describeDuration = function(months)  {
+
+    var years = Math.floor(months / 12),
+        rest = months % 12,
+        parts = [];
+    if(years)
+        parts.push(years + (years == 1 ? ' year' : ' years'));
+    if(rest || !years)
+        parts.push(rest + (rest == 1 ? ' month' : ' months'));
+    return 'in ' + parts.join(', ');
+
+};
+
 
 Unburyme.TotalResults.prototype.clearData = function()  {
 
     this.finalPayOffDate.setCurrent();
     this.totalInterest = 0;
+    this.totalPrincipal = 0;
 
 };
 
@@ -51,6 +87,6 @@ Unburyme.TotalResults.prototype.clearData = function()  {
 Unburyme.TotalResults.prototype.reset = function()  {
 
     this.clearData();
-    $('#totalResultsContainer').fadeOut(this.loanApp.config.fadeSpeed);
+    Unburyme.Dom.byId('totalResultsContainer').innerHTML = '';
 
 }

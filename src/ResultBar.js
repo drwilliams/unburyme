@@ -26,8 +26,9 @@ Unburyme.ResultBar = function(uid, loan, loanApp)   {
  */
 Unburyme.ResultBar.prototype.destroy = function()   {
 
-    $('#resultsContainer'+this.uid).slideUp(this.loanApp.config.slideSpeed, function(){
-        $('#resultsContainer'+this.uid).remove();
+    var el = Unburyme.Dom.byId('resultsContainer'+this.uid);
+    Unburyme.Dom.slideUp(el, this.loanApp.config.slideSpeed, function()   {
+        el.remove();
     });     
 
 };
@@ -42,67 +43,59 @@ Unburyme.ResultBar.prototype.drawStart = function() {
     this.clearGraphData();
     this.totalInterestPaid = 0;
 
-    this.htmlMonthly = '<div class=\'monthlyResults\' id=\'monthlyResults'+this.uid+'\'>\n';
-    this.htmlMonthly += '<table><tr>';
-    this.htmlMonthly += '<td class=\'tHead month\'>Month</td>\n';
-    this.htmlMonthly += '<td class=\'tHead monthlyPayment\'>Payment</td>\n';
-    this.htmlMonthly += '<td class=\'tHead princPaid\'>princPaid</td>\n';
-    this.htmlMonthly += '<td class=\'tHead interestPaid\'>interestPaid</td>\n';
-    this.htmlMonthly += '<td class=\'tHead principle\'>Principle</td>\n';
-    this.htmlMonthly += '<td class=\'tHead totalInterest\'>Total Interest</td>\n';
-    this.htmlMonthly += '</tr>\n';      
+    this.htmlMonthly = '<div class=\'monthlyResults\' id=\'monthlyResults' + this.uid + '\'><table>' +
+        '<thead><tr><th scope=\'col\'>Month</th><th scope=\'col\'>Payment</th><th scope=\'col\'>Principal</th>' +
+        '<th scope=\'col\'>Interest</th><th scope=\'col\'>Balance</th><th scope=\'col\'>Total interest</th></tr></thead><tbody>';
 
 };
 
 
 /**
- * Draws extended loan information
+ * Adds one month to the schedule table and graph data
  */
 Unburyme.ResultBar.prototype.drawMain = function(iterator,currentMonth,payment,princPaid,interestPaid,princRemaining)   {
 
-    var alternateRows = currentMonth.getMonth() % 2;
-    this.htmlMonthly += '<tr class=\'alternateRows'+alternateRows+'\'>\n';
-    this.htmlMonthly += '   <td class=\'tBody month\'>'+currentMonth.print()+'</td>\n';
-    this.htmlMonthly += '   <td class=\'tBody monthlyPayment\'>$'+payment.toFixed(2)+'</td>\n';
-    this.htmlMonthly += '   <td class=\'tBody princPaid\'>$'+princPaid.toFixed(2)+'</td>\n';
-    this.htmlMonthly += '   <td class=\'tBody interestPaid\'>$'+interestPaid.toFixed(2)+'</td>\n';
-    this.htmlMonthly += '   <td class=\'tBody princRemaining\'>$'+princRemaining.toFixed(2)+'</td>\n';
-    this.htmlMonthly += '   <td class=\'tBody totalInterestPaid\'>$'+this.totalInterestPaid.toFixed(2)+'</td>\n';
-    this.htmlMonthly += '</tr>\n';
-        
-    //Store graph data  
-    this.graphData_princRemaining.push([iterator,princRemaining.toFixed(2)]);
-    this.graphData_princPaid.push([iterator,princPaid.toFixed(2)]);
-    this.graphData_totalInterestPaid.push([iterator,this.totalInterestPaid.toFixed(2)]);
-    this.graphData_monthlyPayment.push([iterator,payment.toFixed(2)]);
-    
+    var money = Unburyme.formatMoney;
+    this.htmlMonthly += '<tr><td>' + currentMonth.print() + '</td><td>' + money(payment) + '</td><td>' + money(princPaid) +
+        '</td><td>' + money(interestPaid) + '</td><td>' + money(princRemaining) + '</td><td>' + money(this.totalInterestPaid) + '</td></tr>';
+
+    //Store graph data
+    this.graphData_princRemaining.push(Unburyme.roundCents(princRemaining));
+    this.graphData_princPaid.push(Unburyme.roundCents(princPaid));
+    this.graphData_totalInterestPaid.push(Unburyme.roundCents(this.totalInterestPaid));
+    this.graphData_monthlyPayment.push(Unburyme.roundCents(payment));
+
 };
 
-/**
- * Draws extended loan information 
- */
-Unburyme.ResultBar.prototype.drawFinal = function() {
-        
-    this.htmlMonthly += '</table></div>';
-    this.htmlMain = '       <a class=\'resultBarLink\' ><div class=\'resultBar\' id=\'resultBar'+this.uid+'\'>\n';
-    this.htmlMain += '      <div class=\'loanName\'>'+this.loan.getName()+'</div>\n';
-    this.htmlMain += '      <div class=\'payoffDateText\'>paid off by</div><div class=\'payoffDate\'>'+this.payOffDate.print()+'</div>\n';
-    this.htmlMain += '      <div class=\'totalInterestText\'>total interest paid</div><div class=\'totalInterest\'>$'+this.totalInterestPaid.toFixed(2)+'</div>\n';
-    this.htmlMain += '      <div class=\'resultBarDetailsClick\'>click for details</div>';
-    this.htmlMain += '  </div>\n';
-    this.htmlMain += this.htmlMonthly;
-    this.htmlMain += '</a>\n';
 
-    //Create #resultBar if it doesn't exist
-    if($('#resultBar'+this.uid).length) {
-        $('#resultsContainer'+this.uid).html(this.htmlMain);
-        $('#monthlyResults'+this.uid).css('display','none');            
-    }   
-    else    {
-        this.htmlMain = '<div class=\'resultsContainer\' id=\'resultsContainer'+this.uid+'\'>\n'+this.htmlMain+'</div>\n';
-        $('#allResultsContainer').append(this.htmlMain).fadeIn(this.loanApp.config.fadeSpeed);
-        $('#monthlyResults'+this.uid).css('display','none');
+/**
+ * Draws the summary row for this loan, followed by its (collapsed) schedule
+ * @param {number=} order Position in the payoff order, starting at 0
+ */
+Unburyme.ResultBar.prototype.drawFinal = function(order) {
+
+    var colors = this.loanApp.config.colorSet,
+        colorIndex = this.loanApp.initLoanArray.indexOf(this.loan),
+        color = colors[Math.max(colorIndex, 0) % colors.length],
+        orderText = typeof order == 'number' ? '<span class=\'resultOrder\'>Priority ' + (order + 1) + '</span>' : '';
+
+    this.htmlMonthly += '</tbody></table></div>';
+    this.htmlMain = '<div class=\'resultBar\' id=\'resultBar' + this.uid + '\' role=\'button\' tabindex=\'0\' aria-expanded=\'false\' aria-controls=\'monthlyResults' + this.uid + '\'>' +
+        '<span class=\'seriesDot\' style=\'background:' + color + '\'></span>' +
+        '<div class=\'resultName\'>' + Unburyme.escapeHtml(this.loan.getName()) + orderText + '</div>' +
+        '<div class=\'resultStat resultPaidOff\'><span>Paid off</span><strong>' + this.payOffDate.print() + '</strong></div>' +
+        '<div class=\'resultStat resultInterest\'><span>Interest</span><strong>' + Unburyme.formatMoney(this.totalInterestPaid) + '</strong></div>' +
+        '<svg class=\'chevron\' viewBox=\'0 0 16 16\' aria-hidden=\'true\'><path d=\'M4 6l4 4 4-4\' /></svg>' +
+        '</div>' + this.htmlMonthly;
+
+    //Create the results container if it doesn't exist
+    var container = Unburyme.Dom.byId('resultsContainer'+this.uid);
+    if(!container)  {
+        container = Unburyme.Dom.create('<div class=\'resultsContainer\' id=\'resultsContainer'+this.uid+'\'></div>');
+        Unburyme.Dom.byId('allResultsContainer').appendChild(container);
     }
+    container.innerHTML = this.htmlMain;
+    Unburyme.Dom.byId('monthlyResults'+this.uid).style.display = 'none';
 };
 
 
@@ -121,7 +114,7 @@ Unburyme.ResultBar.prototype.clearGraphData = function()    {
 /**
  * Return requested graph data for appropriate field
  * @param {string} field Graph information that's requested
- * @return {number[]} Graph data
+ * @return {number[]} One value per month, starting with the first payment month
  */
 Unburyme.ResultBar.prototype.getGraphData = function(field) {
 
@@ -150,9 +143,13 @@ Unburyme.ResultBar.prototype.getGraphData = function(field) {
  */
 Unburyme.ResultBar.prototype.click = function() {
 
-        if($('#monthlyResults'+this.uid).css('display')=='none')
-            $('#monthlyResults'+this.uid).slideDown(this.loanApp.config.slideSpeed);
-        else
-            $('#monthlyResults'+this.uid).slideUp(this.loanApp.config.slideSpeed);
+    var el = Unburyme.Dom.byId('monthlyResults'+this.uid),
+        bar = Unburyme.Dom.byId('resultBar'+this.uid),
+        open = !Unburyme.Dom.isShown(el);
+    bar.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if(open)
+        Unburyme.Dom.slideDown(el, this.loanApp.config.slideSpeed);
+    else
+        Unburyme.Dom.slideUp(el, this.loanApp.config.slideSpeed);
 
 };

@@ -39,28 +39,31 @@ Unburyme.Loan   = function(uid, loanApp)    {
  */
 Unburyme.Loan.prototype.create = function() {
 
-    var html = '<div id=\'loanbar'+this.uid+'\' class=\'loanBarInput uninitialized\'>\n';
-    html += '   <a href=\'#\' class=\'destroyLoan\' id=\'delete'+this.uid+'\'><div class=\'destroyLoanX\'></div></a>\n';
-    html += '   <div class=\'loanName\'>\n';
-    html += '                   <div class=\'fieldTitle\'>Loan Name</div>\n'
-    html += '                   <div class=\'fieldInput\'><input id=\'loanname'+this.uid+'\' class=\'name\' /></div>\n';
-    html += '           </div>\n';
-    html += '   <div class=\'currentBalance\'>\n';
-    html += '                   <div class=\'fieldTitle\'>Current Balance</div>\n';
-    html += '                   <div class=\'fieldInput\'>$<input id=\'loanbalance'+this.uid+'\' class=\'balance  uninitialized\' /></div>\n';
-    html += '           </div>\n';
-    html += '           <div class=\'minMonthlyPayment\'>\n';
-    html += '                   <div class=\'fieldTitle\'>Min. Payment</div>\n';
-    html += '                   <div class=\'fieldInput\'>$<input id=\'loanminPayment'+this.uid+'\' class=\'minPayment  uninitialized\' /></div>\n';
-    html += '           </div>\n';
-    html += '           <div class=\'interest\'>\n';
-    html += '                   <div class=\'fieldTitle\'>Interest</div>\n';
-    html += '                   <div class=\'fieldInput\'>%<input id=\'loaninterest'+this.uid+'\' class=\'interest  uninitialized\' /></div>\n';
-    html += '        </div>\n';
-    html += '       </div>\n';
-        
-    $('#loanBarInputContainer').append(html);
-    $('#loanbar'+this.uid).css('display','none').slideDown(this.loanApp.config.slideSpeed);
+    var uid = this.uid,
+        field = function(name, label, extraClass, prefix, suffix, placeholder)  {
+            var id = 'loan' + name + uid,
+                input = '<input id=\'' + id + '\' class=\'' + name + extraClass + '\' autocomplete=\'off\' placeholder=\'' + placeholder + '\'' +
+                    (name == 'name' ? '' : ' inputmode=\'decimal\'') + ' />';
+            if(prefix || suffix)
+                input = '<div class=\'affix\'>' + (prefix ? '<span aria-hidden=\'true\'>' + prefix + '</span>' : '') + input +
+                    (suffix ? '<span aria-hidden=\'true\'>' + suffix + '</span>' : '') + '</div>';
+            return '<div class=\'field' + (name == 'name' ? ' fieldName' : '') + '\'><label for=\'' + id + '\'>' + label + '</label>' + input + '</div>';
+        };
+
+    var html = '<div id=\'loanbar' + uid + '\' class=\'loanBarInput uninitialized\'><div class=\'loanRow\'>' +
+        '<div class=\'loanFields\'>' +
+            field('name', 'Name', '', '', '', 'Loan ' + (uid + 1)) +
+            field('balance', 'Balance', ' uninitialized', '$', '', '0.00') +
+            field('minPayment', 'Min. payment', ' uninitialized', '$', '', '0.00') +
+            field('interest', 'Interest rate', ' uninitialized', '', '%', '0.0') +
+        '</div>' +
+        '<button type=\'button\' class=\'destroyLoan\' id=\'delete' + uid + '\' aria-label=\'Remove loan\' title=\'Remove loan\'>' +
+            '<svg viewBox=\'0 0 16 16\' aria-hidden=\'true\'><path d=\'M4 4l8 8M12 4l-8 8\' /></svg></button>' +
+        '</div></div>';
+
+    var el = Unburyme.Dom.create(html);
+    Unburyme.Dom.byId('loanBarInputContainer').appendChild(el);
+    Unburyme.Dom.slideDown(el, this.loanApp.config.slideSpeed);
 
 };
 
@@ -70,8 +73,9 @@ Unburyme.Loan.prototype.create = function() {
  */
 Unburyme.Loan.prototype.destroy = function()    {
 
-    $('#loanbar'+this.uid).slideUp(this.loanApp.config.slideSpeed, function(){
-        $('#loanbar'+this.uid).remove();
+    var el = Unburyme.Dom.byId('loanbar'+this.uid);
+    Unburyme.Dom.slideUp(el, this.loanApp.config.slideSpeed, function()   {
+        el.remove();
     });
     this.results.destroy();
     //Remove all uninitialization tags
@@ -84,8 +88,8 @@ Unburyme.Loan.prototype.destroy = function()    {
     // Should be removed from array; sanity check
     this.deleted = 1;
 
-    for(var i=0;i<5;i++)        
-        this.isInitialized[i] = 0;
+    for(var key in this.isInitialized)
+        this.isInitialized[key] = 0;
 
 };
 
@@ -187,26 +191,9 @@ Unburyme.Loan.prototype.calculate = function()  {
 
 Unburyme.Loan.prototype.validate = function(field, value)   {
 
-    var validChars = "0123456789., ",
-        validTest = true,
-        character;
-    for(i=0;i<value.length && validTest==true;i++)  {
-        character = value.charAt(i);
-        if(validChars.indexOf(character) == -1)
-            validTest = false;
-    }
-    if(value=='')   {
-        validTest = false;
-        $('input .'+field).val('');
-    }
-    if(field=='name')
-        validTest = true;
-    if(validTest)
-        this.isValid[field] = 1;
-    else    
-        this.isValid[field] = 0;
-    if(this.isValid['balance'] && this.isValid['minPayment'] && this.isValid['interest'])
-        this.isValid['loan'] = 1;
+    var validTest = field == 'name' || !isNaN(Unburyme.parseAmount(value));
+    this.isValid[field] = validTest ? 1 : 0;
+    this.isValid['loan'] = (this.isValid['balance'] && this.isValid['minPayment'] && this.isValid['interest']) ? 1 : 0;
 
     // Call validateDisplay to handle visual representation
     this.validateDisplay(field,validTest);
@@ -217,10 +204,9 @@ Unburyme.Loan.prototype.validate = function(field, value)   {
     
 Unburyme.Loan.prototype.validateDisplay = function(field, isFieldValid)  {
 
-   if(isFieldValid)
-       $('#loan'+field+this.uid).removeClass('invalidField');
-   else
-       $('#loan'+field+this.uid).addClass('invalidField');
+    var el = Unburyme.Dom.byId('loan'+field+this.uid);
+    if(el)
+        el.classList.toggle('invalidField', !isFieldValid);
 };
 
 
@@ -228,8 +214,9 @@ Unburyme.Loan.prototype.cleanField = function(field)    {
 
     if(field=='loan')
         field = 'bar';
-    $('#loan'+field+this.uid).removeClass('uninitialized');
-    $('#loan'+field+this.uid).removeClass('invalidField');
+    var el = Unburyme.Dom.byId('loan'+field+this.uid);
+    if(el)
+        el.classList.remove('uninitialized', 'invalidField');
 };
 
 
