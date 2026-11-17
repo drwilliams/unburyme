@@ -154,3 +154,38 @@ test('cash flow frees up payments sooner than avalanche in the example case', fu
     assert.strictEqual(cash.loans[0].rows.length, 3);
     assert.strictEqual(aval.loans[1].rows.length, 4);
 });
+
+test('required minimums drop out after each payoff month', function()  {
+    var totals = U.requiredMinimums([
+        {months: 2, minPayment: 500},
+        {months: 4, minPayment: 30},
+        {months: 3, minPayment: 300}
+    ]);
+    assert.strictEqual(JSON.stringify(totals), '[830,830,330,30]');
+    assert.strictEqual(JSON.stringify(U.firstMinimumDrop(totals)), '{"month":2,"from":830,"to":330}');
+});
+
+test('first minimum drop handles one loan and no minimums', function()  {
+    assert.strictEqual(JSON.stringify(U.firstMinimumDrop(U.requiredMinimums([{months: 3, minPayment: 100}]))),
+        '{"month":3,"from":100,"to":0}');
+    assert.strictEqual(U.firstMinimumDrop(U.requiredMinimums([{months: 3, minPayment: 0}])), null);
+    assert.strictEqual(U.firstMinimumDrop([]), null);
+});
+
+test('cash flow frees up required minimums sooner in the example case', function()  {
+    var start = new U.Date();
+    start.setDate(2026, 0);
+    var car = {balance: 1500, interest: 3, minPayment: 500},
+        medical = {balance: 900, interest: 18, minPayment: 30},
+        card = {balance: 20000, interest: 24, minPayment: 300};
+    var drop = function(loans)  {
+        var r = U.computeSchedule(loans, 1200, start);
+        return U.firstMinimumDrop(U.requiredMinimums(r.loans.map(function(l, i) {
+            return {months: l.rows.length, minPayment: loans[i].minPayment};
+        })));
+    };
+    var cashflow = drop([car, medical, card]),
+        avalanche = drop([card, medical, car]);
+    assert.strictEqual(cashflow.to, 330);
+    assert.ok(cashflow.month < avalanche.month, 'cash flow drops in month ' + cashflow.month + ', avalanche in ' + avalanche.month);
+});

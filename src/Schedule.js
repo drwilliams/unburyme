@@ -102,6 +102,53 @@ Unburyme.sortForPaymentType = function(loans, paymentType)  {
 
 
 /**
+ * Total minimum payments still required in each month of the plan. A loan's minimum
+ * counts through the month it is paid off and drops out after that.
+ * @param {Array.<{months: number, minPayment: number}>} loans
+ *     months: number of monthly payments until the loan is paid off
+ * @return {number[]} One total per month, for as many months as the longest loan
+ */
+Unburyme.requiredMinimums = function(loans)   {
+
+    var length = 0,
+        totals = [],
+        i, m;
+    for(i=0;i<loans.length;i++)
+        length = Math.max(length, loans[i].months);
+    for(m=0;m<length;m++)   {
+        var total = 0;
+        for(i=0;i<loans.length;i++)    {
+            if(m < loans[i].months)
+                total += loans[i].minPayment;
+        }
+        totals.push(Unburyme.roundCents(total));
+    }
+    return totals;
+
+};
+
+
+/**
+ * Finds the first month the required minimums fall below their starting level
+ * @param {number[]} totals From Unburyme.requiredMinimums
+ * @return {?{month: number, from: number, to: number}} month is an offset from the first
+ *     payment month; null when there are no minimums
+ */
+Unburyme.firstMinimumDrop = function(totals)    {
+
+    if(!totals.length || !(totals[0] > 0))
+        return null;
+    for(var m=1;m<totals.length;m++)    {
+        if(totals[m] < totals[0])
+            return {month: m, from: totals[0], to: totals[m]};
+    }
+    // Every loan is paid off in the last month, so the next month needs nothing
+    return {month: totals.length, from: totals[0], to: 0};
+
+};
+
+
+/**
  * Unburyme.computeSchedule
  * Builds the month-by-month payoff schedule. Every month each unpaid loan gets its
  * minimum payment; whatever is left of totalPayment (including the minimums of loans

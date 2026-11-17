@@ -438,7 +438,7 @@ input::placeholder  {
 
 #totalResultsBar    {
     display: grid;
-    grid-template-columns: 1.3fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 12px;
     margin-bottom: 16px;
 }
@@ -701,12 +701,18 @@ input::placeholder  {
         margin-top: 22px;
     }
 
-    #totalResultsBar    {
-        grid-template-columns: 1fr 1fr;
+    .statHero, .statMinimums   {
+        grid-column: 1 / -1;
     }
 
-    .statHero   {
-        grid-column: 1 / -1;
+    .segmentedSmall {
+        width: 100%;
+    }
+
+    .segmentedSmall button  {
+        min-width: 0;
+        padding: 5px 2px;
+        font-size: 12px;
     }
 
     .stat strong    {

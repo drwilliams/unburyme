@@ -33,12 +33,37 @@ Unburyme.TotalResults.prototype.draw = function()   {
             '<div class=\'stat statHero\'><span class=\'statLabel\'>Debt free by</span>' +
                 '<strong class=\'payoffDate\'>' + this.finalPayOffDate.print() + '</strong>' +
                 '<span class=\'statSub\'>' + Unburyme.TotalResults.describeDuration(this.monthsToPayOff()) + '</span></div>' +
+            this.minimumsTile() +
             '<div class=\'stat\'><span class=\'statLabel\'>Total interest</span>' +
                 '<strong class=\'totalInterest\'>' + money(this.totalInterest) + '</strong></div>' +
             '<div class=\'stat\'><span class=\'statLabel\'>Total paid</span>' +
                 '<strong>' + money(this.totalPrincipal + this.totalInterest, true) + '</strong></div>' +
         '</div>';
     Unburyme.Dom.byId('totalResultsContainer').innerHTML = html;
+
+};
+
+
+/**
+ * @return {string} A stat tile showing how far required minimums fall once the first loan is gone
+ */
+Unburyme.TotalResults.prototype.minimumsTile = function()   {
+
+    var drop = Unburyme.firstMinimumDrop(this.loanApp.getRequiredMinimums()),
+        value, sub;
+    if(!drop)   {
+        value = '$0/mo';
+        sub = 'No minimum payments';
+    }
+    else    {
+        var date = new Unburyme.Date();
+        for(var m=0;m<drop.month;m++)
+            date.increment();
+        value = Unburyme.formatMoney(drop.to, true) + '/mo';
+        sub = 'down from ' + Unburyme.formatMoney(drop.from, true) + ', starting ' + date.print();
+    }
+    return '<div class=\'stat statMinimums\'><span class=\'statLabel\'>Required minimums</span>' +
+        '<strong>' + value + '</strong><span class=\'statSub\'>' + sub + '</span></div>';
 
 };
 

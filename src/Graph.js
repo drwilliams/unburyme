@@ -42,7 +42,8 @@ Unburyme.Graph.TITLES = {
     'princRemaining': 'Balance remaining',
     'princPaid': 'Principal paid each month',
     'totalInterestPaid': 'Interest paid so far',
-    'monthlyPayment': 'Monthly payment'
+    'monthlyPayment': 'Monthly payment',
+    'minimums': 'Required minimum payments'
 };
 
 Unburyme.Graph.HEIGHT = 300;
@@ -71,6 +72,7 @@ Unburyme.Graph.prototype.getTheme = function()  {
         };
     return {
         text: read('--muted', '#5a6a74'),
+        accent: read('--accent', '#077c93'),
         grid: read('--border', '#dfe5e9')
     };
 
@@ -97,10 +99,17 @@ Unburyme.Graph.prototype.draw = function(field) {
         columns = [],
         months = 0,
         i, m;
-    for(i=0;i<loans.length;i++) {
-        names.push(loans[i].getName());
-        columns.push(loans[i].results.getGraphData(field) || []);
-        months = Math.max(months, columns[i].length);
+    if(field == 'minimums') {
+        names.push('Required minimums');
+        columns.push(this.loanApp.getRequiredMinimums());
+        months = columns[0].length;
+    }
+    else    {
+        for(i=0;i<loans.length;i++) {
+            names.push(loans[i].getName());
+            columns.push(loans[i].results.getGraphData(field) || []);
+            months = Math.max(months, columns[i].length);
+        }
     }
 
     // uPlot wants one shared x array, with every series padded to its length
@@ -116,7 +125,9 @@ Unburyme.Graph.prototype.draw = function(field) {
     this.yearTicks = this.makeYearTicks(months);
 
     // Rebuild only when the set of series changes; otherwise just swap the data
-    var key = JSON.stringify(names);
+    var key = field + ':' + JSON.stringify(names);
+    if(field != 'minimums')
+        key = JSON.stringify(names);
     if(this.chart && key == this.chartKey)  {
         this.chart.setData(data);
         return;
@@ -150,7 +161,9 @@ Unburyme.Graph.prototype.makeOptions = function(names)  {
     for(var i=0;i<names.length;i++) {
         series.push({
             label: names[i],
-            stroke: this.colorSet[i % this.colorSet.length],
+            stroke: this.lastFieldGraphed == 'minimums' ? theme.accent : this.colorSet[i % this.colorSet.length],
+            // Minimums change only when a loan is paid off, so draw them as steps
+            paths: this.lastFieldGraphed == 'minimums' && uPlot.paths && uPlot.paths.stepped ? uPlot.paths.stepped({align: 1}) : undefined,
             width: 2.5,
             points: {show: false},
             value: function(u, v)   {
