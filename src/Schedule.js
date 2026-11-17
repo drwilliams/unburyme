@@ -54,21 +54,43 @@ Unburyme.escapeHtml = function(s)  {
 
 
 /**
+ * How much of its balance a loan's minimum payment covers each month.
+ * Paying off a loan with a high ratio frees up the most monthly cash per dollar of debt.
+ * @param {Object} loan Exposes getMinPayment() and getBalance()
+ * @return {number} e.g. 0.333 for a $500 payment on a $1,500 balance; Infinity for a $0 balance
+ */
+Unburyme.cashFlowRatio = function(loan)    {
+
+    var balance = loan.getBalance();
+    return balance > 0 ? loan.getMinPayment() / balance : Infinity;
+
+};
+
+
+/**
  * Unburyme.sortForPaymentType
  * Orders loans by payoff priority. The sort is stable, so ties keep their entry order.
- * @param {Array.<Object>} loans Objects exposing getInterest() and getBalance()
- * @param {string} paymentType 'avalanche' (highest interest first) or 'snowball' (lowest balance first)
+ * @param {Array.<Object>} loans Objects exposing getInterest(), getBalance() and getMinPayment()
+ * @param {string} paymentType 'avalanche' (highest interest first), 'snowball' (lowest balance first)
+ *     or 'cashflow' (highest minimum payment relative to balance first)
  * @return {Array.<Object>} A new, sorted array
  */
 Unburyme.sortForPaymentType = function(loans, paymentType)  {
 
+    var compare = function(x, y)    {
+        return x == y ? 0 : (x < y ? -1 : 1);
+    };
     var indexed = [];
     for(var i=0;i<loans.length;i++)
         indexed.push({loan: loans[i], index: i});
     indexed.sort(function(a, b)    {
-        var diff = paymentType == 'avalanche'
-            ? b.loan.getInterest() - a.loan.getInterest()
-            : a.loan.getBalance() - b.loan.getBalance();
+        var diff;
+        if(paymentType == 'avalanche')
+            diff = compare(b.loan.getInterest(), a.loan.getInterest());
+        else if(paymentType == 'cashflow')
+            diff = compare(Unburyme.cashFlowRatio(b.loan), Unburyme.cashFlowRatio(a.loan));
+        else
+            diff = compare(a.loan.getBalance(), b.loan.getBalance());
         return diff || a.index - b.index;
     });
     var sorted = [];

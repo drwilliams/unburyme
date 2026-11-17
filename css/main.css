@@ -145,6 +145,15 @@ button, input   {
     margin-top: 0;
 }
 
+.moreInfo ul    {
+    margin: 0 0 1em;
+    padding-left: 20px;
+}
+
+.moreInfo li + li   {
+    margin-top: 6px;
+}
+
 .moreInfo p:last-child  {
     margin-bottom: 0;
 }
@@ -670,6 +679,10 @@ input::placeholder  {
     #controlBar {
         grid-template-columns: 1fr;
         gap: 22px;
+    }
+
+    #controlBar .segmented button   {
+        padding: 8px 6px;
     }
 
     .loanFields {

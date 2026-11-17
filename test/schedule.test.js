@@ -102,8 +102,13 @@ test('payments below interest are reported as impossible', function()  {
     assert.strictEqual(r.possible, false);
 });
 
-function fakeLoan(name, balance, interest)  {
-    return {name: name, getBalance: function() { return balance; }, getInterest: function() { return interest; }};
+function fakeLoan(name, balance, interest, minPayment)  {
+    return {
+        name: name,
+        getBalance: function() { return balance; },
+        getInterest: function() { return interest; },
+        getMinPayment: function() { return minPayment || 0; }
+    };
 }
 
 function names(loans)   {
@@ -118,4 +123,34 @@ test('avalanche keeps 0% loans and orders by highest interest', function()  {
 test('snowball orders by lowest balance and is stable on ties', function()  {
     var loans = [fakeLoan('a', 500, 1), fakeLoan('b', 0, 1), fakeLoan('c', 500, 9), fakeLoan('d', 50, 1)];
     assert.strictEqual(names(U.sortForPaymentType(loans, 'snowball')), 'b,d,a,c');
+});
+
+test('cash flow orders by minimum payment relative to balance', function()  {
+    var loans = [
+        fakeLoan('mortgage', 20000, 4, 300),   // 1.5% of balance per month
+        fakeLoan('car', 1500, 7, 500),         // 33%
+        fakeLoan('card', 4000, 22, 200),       // 5%
+        fakeLoan('done', 0, 10, 50),           // already paid off: first
+        fakeLoan('tie', 3000, 1, 450)          // 15%
+    ];
+    assert.strictEqual(names(U.sortForPaymentType(loans, 'cashflow')), 'done,car,tie,card,mortgage');
+    assert.ok(Math.abs(U.cashFlowRatio(loans[1]) - 1 / 3) < 1e-12);
+});
+
+test('cash flow is stable on equal ratios', function()  {
+    var loans = [fakeLoan('a', 1000, 5, 100), fakeLoan('b', 2000, 9, 200), fakeLoan('c', 500, 1, 100)];
+    assert.strictEqual(names(U.sortForPaymentType(loans, 'cashflow')), 'c,a,b');
+});
+
+test('cash flow frees up payments sooner than avalanche in the example case', function()  {
+    // A $500 minimum on $1,500 vs. a $300 minimum on $20,000 at a higher rate
+    var car = {balance: 1500, interest: 3, minPayment: 500},
+        loan = {balance: 20000, interest: 8, minPayment: 300},
+        start = new U.Date();
+    start.setDate(2026, 0);
+    var cash = U.computeSchedule([car, loan], 1000, start),
+        aval = U.computeSchedule([loan, car], 1000, start);
+    // Cash flow: the car gets $700/month and is gone in month 3; under avalanche it only gets its $500 minimum
+    assert.strictEqual(cash.loans[0].rows.length, 3);
+    assert.strictEqual(aval.loans[1].rows.length, 4);
 });
