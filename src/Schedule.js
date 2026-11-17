@@ -54,27 +54,96 @@ Unburyme.escapeHtml = function(s)  {
 
 
 /**
+ * How much of its balance a loan's minimum payment covers each month.
+ * Paying off a loan with a high ratio frees up the most monthly cash per dollar of debt.
+ * @param {Object} loan Exposes getMinPayment() and getBalance()
+ * @return {number} e.g. 0.333 for a $500 payment on a $1,500 balance; Infinity for a $0 balance
+ */
+Unburyme.cashFlowRatio = function(loan)    {
+
+    var balance = loan.getBalance();
+    return balance > 0 ? loan.getMinPayment() / balance : Infinity;
+
+};
+
+
+/**
  * Unburyme.sortForPaymentType
  * Orders loans by payoff priority. The sort is stable, so ties keep their entry order.
- * @param {Array.<Object>} loans Objects exposing getInterest() and getBalance()
- * @param {string} paymentType 'avalanche' (highest interest first) or 'snowball' (lowest balance first)
+ * @param {Array.<Object>} loans Objects exposing getInterest(), getBalance() and getMinPayment()
+ * @param {string} paymentType 'avalanche' (highest interest first), 'snowball' (lowest balance first)
+ *     or 'cashflow' (highest minimum payment relative to balance first)
  * @return {Array.<Object>} A new, sorted array
  */
 Unburyme.sortForPaymentType = function(loans, paymentType)  {
 
+    var compare = function(x, y)    {
+        return x == y ? 0 : (x < y ? -1 : 1);
+    };
     var indexed = [];
     for(var i=0;i<loans.length;i++)
         indexed.push({loan: loans[i], index: i});
     indexed.sort(function(a, b)    {
-        var diff = paymentType == 'avalanche'
-            ? b.loan.getInterest() - a.loan.getInterest()
-            : a.loan.getBalance() - b.loan.getBalance();
+        var diff;
+        if(paymentType == 'avalanche')
+            diff = compare(b.loan.getInterest(), a.loan.getInterest());
+        else if(paymentType == 'cashflow')
+            diff = compare(Unburyme.cashFlowRatio(b.loan), Unburyme.cashFlowRatio(a.loan));
+        else
+            diff = compare(a.loan.getBalance(), b.loan.getBalance());
         return diff || a.index - b.index;
     });
     var sorted = [];
     for(var j=0;j<indexed.length;j++)
         sorted.push(indexed[j].loan);
     return sorted;
+
+};
+
+
+/**
+ * Total minimum payments still required in each month of the plan. A loan's minimum
+ * counts through the month it is paid off and drops out after that.
+ * @param {Array.<{months: number, minPayment: number}>} loans
+ *     months: number of monthly payments until the loan is paid off
+ * @return {number[]} One total per month, for as many months as the longest loan
+ */
+Unburyme.requiredMinimums = function(loans)   {
+
+    var length = 0,
+        totals = [],
+        i, m;
+    for(i=0;i<loans.length;i++)
+        length = Math.max(length, loans[i].months);
+    for(m=0;m<length;m++)   {
+        var total = 0;
+        for(i=0;i<loans.length;i++)    {
+            if(m < loans[i].months)
+                total += loans[i].minPayment;
+        }
+        totals.push(Unburyme.roundCents(total));
+    }
+    return totals;
+
+};
+
+
+/**
+ * Finds the first month the required minimums fall below their starting level
+ * @param {number[]} totals From Unburyme.requiredMinimums
+ * @return {?{month: number, from: number, to: number}} month is an offset from the first
+ *     payment month; null when there are no minimums
+ */
+Unburyme.firstMinimumDrop = function(totals)    {
+
+    if(!totals.length || !(totals[0] > 0))
+        return null;
+    for(var m=1;m<totals.length;m++)    {
+        if(totals[m] < totals[0])
+            return {month: m, from: totals[0], to: totals[m]};
+    }
+    // Every loan is paid off in the last month, so the next month needs nothing
+    return {month: totals.length, from: totals[0], to: 0};
 
 };
 

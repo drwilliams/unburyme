@@ -24,18 +24,19 @@ document.addEventListener('DOMContentLoaded', function()    {
 
     var strategyHints = {
         'avalanche': 'Highest interest rate first. Saves the most money.',
-        'snowball': 'Smallest balance first. Clears individual loans sooner.'
+        'snowball': 'Smallest balance first. Clears individual loans sooner.',
+        'cashflow': 'Biggest minimum payment for its balance first. Frees up monthly cash fastest.'
     };
 
     var setPaymentType = function(type) {
 
-        var other = type == 'avalanche' ? 'snowball' : 'avalanche';
-        byId(type).classList.remove('unselectedPaymentType');
-        byId(type).classList.add('selectedPaymentType');
-        byId(type).setAttribute('aria-pressed', 'true');
-        byId(other).classList.remove('selectedPaymentType');
-        byId(other).classList.add('unselectedPaymentType');
-        byId(other).setAttribute('aria-pressed', 'false');
+        for(var t in strategyHints) {
+            var button = byId(t),
+                selected = t == type;
+            button.classList.toggle('selectedPaymentType', selected);
+            button.classList.toggle('unselectedPaymentType', !selected);
+            button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+        }
         byId('strategyHint').textContent = strategyHints[type];
         loanApp.paymentType = type;
     };
@@ -43,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function()    {
 
     Dom.on(document, 'click', '.paymentTypeButtonLink', function(e, button)   {
 
-        setPaymentType(button.classList.contains('avaLink') ? 'avalanche' : 'snowball');
+        setPaymentType(button.id);
         calculate();
     });
 

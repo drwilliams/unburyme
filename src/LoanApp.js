@@ -320,6 +320,23 @@ Unburyme.LoanApp.prototype.sortLoans = function()   {
 
 
 /**
+ * @return {number[]} Total required minimum payments for each month of the current plan
+ */
+Unburyme.LoanApp.prototype.getRequiredMinimums = function()  {
+
+    var loans = [];
+    for(var i=0;i<this.initLoanArray.length;i++)   {
+        loans.push({
+            months: this.initLoanArray[i].results.getGraphData('princRemaining').length,
+            minPayment: this.initLoanArray[i].getMinPayment()
+        });
+    }
+    return Unburyme.requiredMinimums(loans);
+
+};
+
+
+/**
  * Count the loans that are ready to be calculated
  * @return {number} Number of loans that are ready to be calculated
  */

@@ -5,7 +5,7 @@
     <meta name='viewport' content='width=device-width, initial-scale=1' />
     <title>unbury.me · a loan calculator to become debt free</title>
     <meta name='description' content='unbury.me is an application that calculates payment plans based off of loan information to become debt free.' />
-    <meta name='keywords' content='loan, loan calculator, debt free, debt avalanche, debt snowball, personal finance' />
+    <meta name='keywords' content='loan, loan calculator, debt free, debt avalanche, debt snowball, cash flow, personal finance' />
     <meta name='theme-color' content='#f5f7f9' media='(prefers-color-scheme: light)' />
     <meta name='theme-color' content='#0d1417' media='(prefers-color-scheme: dark)' />
     <link rel='preconnect' href='https://fonts.googleapis.com' />
@@ -34,7 +34,12 @@
     <div id='moreInfo'>
         <div id='help' class='moreInfo card'>
             <p><strong>unbury.me</strong> helps you get debt-free as fast as possible. Enter your loans, then set the total amount you can put towards them each month. Anything above the minimum payments goes to one loan at a time until it's gone. Once a loan is paid off, the money that was going to it rolls over to the next one, and so on.</p>
-            <p>Loans are paid off either from the highest interest rate down (<strong>Avalanche</strong>) or from the smallest balance up (<strong>Snowball</strong>).</p>
+            <p>You choose which loan gets the extra money first:</p>
+            <ul>
+                <li><strong>Avalanche</strong>: the highest interest rate. This usually costs the least in interest.</li>
+                <li><strong>Snowball</strong>: the smallest balance. Individual loans disappear sooner.</li>
+                <li><strong>Cash flow</strong>: the loan whose minimum payment is largest compared to its balance. A $500 minimum on a $1,500 balance (33% a month) goes before a $300 minimum on a $20,000 balance (1.5%). Clearing it frees up the most monthly cash for the least debt.</li>
+            </ul>
             <p>Try putting an extra $100 a month towards your loans and see how much time and interest you save.</p>
         </div>
         <div id='about' class='moreInfo card'>
@@ -59,6 +64,7 @@
                 <div class='segmented' role='group' aria-labelledby='strategyLabel'>
                     <button type='button' class='paymentTypeButtonLink avaLink selectedPaymentType' id='avalanche' aria-pressed='true'>Avalanche</button>
                     <button type='button' class='paymentTypeButtonLink sbLink unselectedPaymentType' id='snowball' aria-pressed='false'>Snowball</button>
+                    <button type='button' class='paymentTypeButtonLink cfLink unselectedPaymentType' id='cashflow' aria-pressed='false'>Cash flow</button>
                 </div>
                 <p class='hint' id='strategyHint'></p>
             </div>
@@ -86,6 +92,7 @@
                         <button type='button' class='graphView' id='graph_princPaid'>Principal</button>
                         <button type='button' class='graphView' id='graph_totalInterestPaid'>Interest</button>
                         <button type='button' class='graphView' id='graph_monthlyPayment'>Payment</button>
+                        <button type='button' class='graphView' id='graph_minimums'>Minimums</button>
                     </div>
                 </div>
                 <div id='graph'></div>

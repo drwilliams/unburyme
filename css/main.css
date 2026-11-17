@@ -145,6 +145,15 @@ button, input   {
     margin-top: 0;
 }
 
+.moreInfo ul    {
+    margin: 0 0 1em;
+    padding-left: 20px;
+}
+
+.moreInfo li + li   {
+    margin-top: 6px;
+}
+
 .moreInfo p:last-child  {
     margin-bottom: 0;
 }
@@ -429,7 +438,7 @@ input::placeholder  {
 
 #totalResultsBar    {
     display: grid;
-    grid-template-columns: 1.3fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 12px;
     margin-bottom: 16px;
 }
@@ -672,6 +681,10 @@ input::placeholder  {
         gap: 22px;
     }
 
+    #controlBar .segmented button   {
+        padding: 8px 6px;
+    }
+
     .loanFields {
         grid-template-columns: 1fr 1fr;
     }
@@ -688,12 +701,18 @@ input::placeholder  {
         margin-top: 22px;
     }
 
-    #totalResultsBar    {
-        grid-template-columns: 1fr 1fr;
+    .statHero, .statMinimums   {
+        grid-column: 1 / -1;
     }
 
-    .statHero   {
-        grid-column: 1 / -1;
+    .segmentedSmall {
+        width: 100%;
+    }
+
+    .segmentedSmall button  {
+        min-width: 0;
+        padding: 5px 2px;
+        font-size: 12px;
     }
 
     .stat strong    {
