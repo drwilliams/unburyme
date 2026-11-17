@@ -1,7 +1,8 @@
 /**
  * unbury.me - loan calculator
  * Namespace for Unburyme
- * http://www.github.com/jsantell/unburyme
+ * https://github.com/drwilliams/unburyme
+ * Based on unbury.me by Jordan Santell
  * @license The MIT License, Copyright (c) 2011 Jordan Santell
  * @author jsantell@gmail.com (Jordan Santell)
  */

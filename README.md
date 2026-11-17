@@ -9,4 +9,4 @@ The order of which loans are paid off first is either highest-to-lowest interest
 
 Put just an extra $100 a month towards your loans and see how much time and interest paid you save!
 
-*unbury.me* is a loan calculator created by [Jordan Santell](http://www.jsantell.com). Source code is licensed under the [MIT License](http://opensource.org/licenses/mit-license.php).
+This is a fork of *unbury.me*, the loan calculator originally created by Jordan Santell. Source code is licensed under the [MIT License](LICENSE).

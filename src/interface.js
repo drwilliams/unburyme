@@ -7,8 +7,6 @@ document.addEventListener('DOMContentLoaded', function()    {
     var loanApp = new Unburyme.LoanApp();
     loanApp.createLoan();
 
-    byId('email').innerHTML = '<a href=\'mailto:jsantell@gmail.com\' title=\'email Jordan Santell\'>jsantell@gmail.com</a>';
-
     var markUninitializedInvalid = function()   {
         var inputs = document.querySelectorAll('input.uninitialized');
         for(var i=0;i<inputs.length;i++)
